@@ -8,7 +8,7 @@ from datetime import datetime
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
-API_TOKEN = "7805771710:AAHa5zCA6qNgo1Q_5eOaqeYZNJUavqRxpSc"
+API_TOKEN = "///"
 MANAGER_ID = 1376857543  # Ваш ID менеджера
 
 # Авторизація Google Sheets
