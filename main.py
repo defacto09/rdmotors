@@ -1,14 +1,18 @@
+import os
 import gspread
 import logging
 from oauth2client.service_account import ServiceAccountCredentials
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
-API_TOKEN = "123"
+API_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
 MANAGER_ID = 1376857543  # Ваш ID менеджера
 
 # Авторизація Google Sheets
