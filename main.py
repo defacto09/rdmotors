@@ -8,7 +8,6 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
-print("TOKEN DEBUG:", os.getenv("TELEGRAM_API_TOKEN"))
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
