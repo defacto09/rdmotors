@@ -21,7 +21,7 @@ scope = [
     "https://www.googleapis.com/auth/drive"
 ]
 creds = ServiceAccountCredentials.from_json_keyfile_name(
-    "/Users/defacto092/IMPORTANT/RDMotors IAM Admin.json", scope)
+    os.getenv("GOOGLE_CREDS_PATH"), scope)
 gs_client = gspread.authorize(creds)
 
 # Отримання даних авто
