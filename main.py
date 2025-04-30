@@ -98,11 +98,6 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     else:
         pass
 
-# Команда /database
-async def database(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    data = get_spreadsheet_data()
-    await update.message.reply_text(data, parse_mode="Markdown")
-
 # Команда /agreement для надсилання посилання на Google Docs документ
 # Команда /agreement для надсилання посилання на Google Docs документ з гіперпосиланням
 async def agreement(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -152,7 +147,6 @@ def main():
     app = Application.builder().token(API_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("database", database))
     app.add_handler(CommandHandler("reply", reply_command))
     app.add_handler(CommandHandler("agreement", agreement))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_user_message))
