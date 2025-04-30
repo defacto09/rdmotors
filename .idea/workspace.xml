@@ -176,7 +176,23 @@
       <option name="project" value="LOCAL" />
       <updated>1745989523314</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="rdmotors">
+      <option name="closed" value="true" />
+      <created>1745989762395</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1745989762395</updated>
+    </task>
+    <task id="LOCAL-00013" summary="rdmotors">
+      <option name="closed" value="true" />
+      <created>1745989829917</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1745989829917</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <option name="createBranch" value="false" />
     <option name="useBranch" value="true" />
     <option name="searchClosedTasks" value="true" />
