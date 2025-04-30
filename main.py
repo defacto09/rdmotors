@@ -87,8 +87,9 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             elif "контакт" in lowered or "телефон" in lowered:
                 await update.message.reply_text("📞 Наш менеджер зателефонує найближчим часом. Телефон: +380673951195")
             elif "в наявності" in lowered or "які авто" in lowered:
-                await update.message.reply_text("📋 Ось список авто:\nНатисніть /database")
-            elif "faq" in lowered or "питання" in lowered:
+                data = get_spreadsheet_data()
+                await update.message.reply_text(data, parse_mode="Markdown")
+        elif "faq" in lowered or "питання" in lowered:
                 await update.message.reply_text("Ром, де машина? - виберіть кнопку 'де авто', і ми надамо вам відповідь")
         else:
             # Якщо це не кнопка — пишемо про надсилання повідомлення
