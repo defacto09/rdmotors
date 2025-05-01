@@ -73,6 +73,10 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     user_id = user.id
     username = user.username or "(без username)"
 
+    if is_spam(user_id):
+        await update.message.reply_text("❗ Ви перевищили ліміт повідомлень. Спробуйте пізніше.")
+        return
+
     keyboard_texts = [
         "📥 Хочу авто зі США", "❓FAQ", "📞 Контакт",
         "📋 В наявності", "🚗 Де авто?"
