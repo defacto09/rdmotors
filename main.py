@@ -15,7 +15,9 @@ logger = logging.getLogger()
 API_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
 MANAGER_ID = 1376857543
 
-MESSAGE
+MESSAGE_LIMIT = 5
+TIME_LIMIT = timedelta(minutes=1)
+user_message_count = defaultdict(list)
 
 # Авторизація Google Sheets
 scope = [
@@ -49,6 +51,20 @@ def save_message_to_db(user_id, username, message_text):
         logger.info("Повідомлення додано до бази даних повідомлень.")
     except Exception as e:
         logger.error(f"Не вдалося зберегти повідомлення: {e}")
+
+# Перевірка на антиспам
+def is_spam(user_id):
+    now = datetime.now()
+
+    # Очищаємо старі записи (які більше ніж TIME_LIMIT)
+    user_message_count[user_id] = [timestamp for timestamp in user_message_count[user_id] if
+                                   now - timestamp < TIME_LIMIT]
+
+    if len(user_message_count[user_id]) >= MESSAGE_LIMIT:
+        return True
+
+    user_message_count[user_id].append(now)  # Додаємо нове повідомлення
+    return False
 
 # Обробка повідомлень
 async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
