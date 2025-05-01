@@ -13,7 +13,9 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 logger = logging.getLogger()
 
 API_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
-MANAGER_ID = 1376857543  # Ваш ID менеджера
+MANAGER_ID = 1376857543
+
+MESSAGE
 
 # Авторизація Google Sheets
 scope = [
