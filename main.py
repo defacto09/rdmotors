@@ -109,9 +109,19 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             elif "контакт" in lowered or "телефон" in lowered:
                 await update.message.reply_text("📞 Наш менеджер зв'яжеться з вами. Телефон: +380673951195")
             elif "в наявності" in lowered or "які авто" in lowered:
-                await update.message.reply_text("📋 Наразі ця функція в розробці. Дані скоро з'являться.")
-        elif "faq" in lowered or "питання" in lowered:
-            await update.message.reply_text("❓ Щоб дізнатись статус замовлення, натисніть '🚗 Де авто?'")
+                cars = [
+                    {"photo": "available_cars/bmwx5.jpg", "caption": "BMW X5 2013, $17,200"},
+                    {"photo": "available_cars/audia4.jpg", "caption": "Audi A4 2017, $24,500"},
+                    {"photo": "available_cars/tiguan.jpg", "caption": "Volkswagen Tiguan 2018, $22,700"}
+                ]
+                for car in cars:
+                    try:
+                        with open(car["photo"], "rb") as photo_file:
+                            await update.message.reply_photo(photo=photo_file, caption=car["caption"])
+                    except Exception as e:
+                        logger.error(f"Не вдалося надіслати фото {car['photo']}: {e}")
+            elif "faq" in lowered or "питання" in lowered:
+                await update.message.reply_text("❓ Щоб дізнатись статус замовлення, натисніть '🚗 Де авто?'")
         else:
             await update.message.reply_text("✅ Ваше повідомлення надіслано менеджеру.")
     else:
