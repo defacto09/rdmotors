@@ -19,15 +19,6 @@ MESSAGE_LIMIT = 5
 TIME_LIMIT = timedelta(minutes=1)
 user_message_count = defaultdict(list)
 
-# Google Sheets авторизація (поки що не використовується, але залишено)
-scope = [
-    "https://spreadsheets.google.com/feeds",
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-]
-creds = ServiceAccountCredentials.from_json_keyfile_name(
-    os.getenv("GOOGLE_CREDS_PATH"), scope)
-
 # 📦 Ініціалізація SQLite
 def init_db():
     conn = sqlite3.connect('client_messages.db')
@@ -44,6 +35,20 @@ def init_db():
     conn.commit()
     conn.close()
     logger.debug("SQLite база даних ініціалізована.")
+
+def init_car_status_db():
+    conn = sqlite3.connect('car_status.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS car_status (
+            vin TEXT PRIMARY KEY,
+            status TEXT,
+            updated_at TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+    logger.debug("SQLite база даних car ініціалізовано")
 
 # 💾 Збереження повідомлення в SQLite
 def save_message_to_db(user_id, username, message_text):
@@ -71,6 +76,50 @@ def is_spam(user_id):
     user_message_count[user_id].append(now)
     return False
 
+async def update_vin_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != MANAGER_ID:
+        await update.message.reply_text("❌ У вас немає доступу.")
+        return
+    if len(context.args) < 2:
+        await update.message.reply_text("⚠️ Формат: /vinstatus <VIN> <статус>")
+        return
+
+    vin = context.args[0].upper()
+    status = " ".join(context.args[1:])
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    try:
+        conn = sqlite3.connect('car_status.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO car_status (vin, status, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(vin) DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at
+        ''', (vin, status, now))
+        conn.commit()
+        conn.close()
+        await update.message.reply_text(f"✅ Статус для VIN {vin} оновлено:\n📍 {status}")
+    except Exception as e:
+        logger.error(f"Помилка при оновленні car_status: {e}")
+        await update.message.reply_text("⚠️ Не вдалося оновити статус.")
+
+def get_car_status_by_vin(vin):
+    try:
+        conn = sqlite3.connect('car_status.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT status, updated_at FROM car_status WHERE vin = ?", (vin,))
+        result = cursor.fetchone()
+        conn.close()
+        if result:
+            logger.debug(f"Знайдений статус для VIN {vin}: {result}")
+        else:
+            logger.debug(f"Не знайдено статусу для VIN {vin}")
+        return result
+    except Exception as e:
+        logger.error(f"Помилка при пошуку VIN у car_status.db: {e}")
+        return None
+
+
 # 📩 Обробка повідомлень
 async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
@@ -81,6 +130,16 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     if is_spam(user_id):
         await update.message.reply_text("❗ Ви перевищили ліміт повідомлень. Спробуйте пізніше.")
         return
+
+    elif len(text) == 17 and text.isalnum():
+        result = get_car_status_by_vin(text.upper())
+        if result:
+            status, updated = result
+            await update.message.reply_text(
+                f"🔎 Статус авто (VIN: {text.upper()}):\n📍 {status}\n🕒 Оновлено: {updated}")
+        else:
+            await update.message.reply_text(
+                "⚠️ Авто з таким VIN-кодом не знайдено в базі. Зачекайте оновлення менеджером.")
 
     keyboard_texts = [
         "📥 Хочу авто зі США", "❓FAQ", "📞 Контакт",
@@ -203,12 +262,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # 🚀 Запуск
 def main():
     init_db()  # Ініціалізуємо базу
+    init_car_status_db() # Ініціалізуємо базу даних статусу авто
     app = Application.builder().token(API_TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("agreement", agreement))
     app.add_handler(CommandHandler("reply", reply_command))
     app.add_handler(CommandHandler("messages", show_messages))
+    app.add_handler(CommandHandler("vinstatus", update_vin_status))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_user_message))
 
     logger.info("Бот запущено.")
