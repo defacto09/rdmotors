@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 logger = logging.getLogger()
 
 API_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
-MANAGER_ID = os.getenv("MANAGER_ID")
+MANAGER_ID = int(os.getenv("MANAGER_ID"))
 
 MESSAGE_LIMIT = 5
 TIME_LIMIT = timedelta(minutes=1)
@@ -136,7 +136,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         if result:
             status, updated = result
             await update.message.reply_text(
-                f"🔎 Статус авто (VIN: {text.upper()}):\n📍 {status}\n🕒 Оновлено: {updated}")
+                f"🔎 Статус авто: \n(VIN: {text.upper()}):\n📍 {status}\n🕒 Оновлено: {updated}")
         else:
             await update.message.reply_text(
                 "⚠️ Авто з таким VIN-кодом не знайдено в базі. Зачекайте оновлення менеджером.")
