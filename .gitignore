@@ -1,3 +1,4 @@
 .env
 credentials/
 client_messages.db
+car_status.db
