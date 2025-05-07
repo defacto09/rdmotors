@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="382ce8e2-ab95-4864-838c-278f72255ab6" name="rdmotors" comment="rdmotors" />
+    <list default="true" id="382ce8e2-ab95-4864-838c-278f72255ab6" name="rdmotors" comment="rdmotors 0.3">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    </list>
     <list id="b7791cbd-d990-40e9-a5df-dbb7f2e1d9bf" name="Changes" comment="rdmotors" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,6 +23,11 @@
   </component>
   <component name="Git.Settings">
     <option name="PUSH_AUTO_UPDATE" value="true" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="new-feature" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -224,7 +232,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746105453115</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="rdmotors 0.3">
+      <option name="closed" value="true" />
+      <created>1746105573645</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1746105573645</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <option name="createBranch" value="false" />
     <option name="useBranch" value="true" />
     <option name="searchClosedTasks" value="true" />
@@ -244,7 +260,8 @@
   <component name="VcsManagerConfiguration">
     <confirmRemoveEmptyChangelist value="2" />
     <MESSAGE value="rdmotors" />
-    <option name="LAST_COMMIT_MESSAGE" value="rdmotors" />
+    <MESSAGE value="rdmotors 0.3" />
+    <option name="LAST_COMMIT_MESSAGE" value="rdmotors 0.3" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -1,5 +1,5 @@
 import os
-import gspread
+import sqlite3
 import logging
 from oauth2client.service_account import ServiceAccountCredentials
 from telegram import Update, ReplyKeyboardMarkup
@@ -19,7 +19,7 @@ MESSAGE_LIMIT = 5
 TIME_LIMIT = timedelta(minutes=1)
 user_message_count = defaultdict(list)
 
-# Авторизація Google Sheets
+# Google Sheets авторизація (поки що не використовується, але залишено)
 scope = [
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/spreadsheets",
@@ -27,46 +27,51 @@ scope = [
 ]
 creds = ServiceAccountCredentials.from_json_keyfile_name(
     os.getenv("GOOGLE_CREDS_PATH"), scope)
-gs_client = gspread.authorize(creds)
 
-# Отримання даних авто
-def get_spreadsheet_data():
-    try:
-        sheet = gs_client.open("test").sheet1
-        data = sheet.get_all_records(expected_headers=["АВТО", "ЦІНА"])
+# 📦 Ініціалізація SQLite
+def init_db():
+    conn = sqlite3.connect('client_messages.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            user_id INTEGER,
+            username TEXT,
+            message TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+    logger.debug("SQLite база даних ініціалізована.")
 
-        formatted = "🔹 *База даних авто:* 🔹\n\n"
-        for r in data:
-            formatted += f"🚗 *{r['АВТО']}*\n💰 *Ціна:* {r['ЦІНА']}$\n\n"
-        return formatted
-    except Exception as e:
-        logger.error(f"Помилка при отриманні даних з Google Sheets: {e}")
-        return "⚠️ Сталася помилка при отриманні даних з бази авто."
-
-# Збереження повідомлень у Google Sheets
+# 💾 Збереження повідомлення в SQLite
 def save_message_to_db(user_id, username, message_text):
     try:
-        sheet = gs_client.open("ClientMessages").sheet1
-        sheet.append_row([str(datetime.now()), user_id, username, message_text])
-        logger.info("Повідомлення додано до бази даних повідомлень.")
+        conn = sqlite3.connect('client_messages.db')
+        cursor = conn.cursor()
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        cursor.execute('''
+            INSERT INTO messages (timestamp, user_id, username, message)
+            VALUES (?, ?, ?, ?)
+        ''', (timestamp, user_id, username, message_text))
+        conn.commit()
+        logger.debug(f"Збережено повідомлення від @{username} (ID: {user_id})")
     except Exception as e:
-        logger.error(f"Не вдалося зберегти повідомлення: {e}")
+        logger.error(f"Не вдалося зберегти повідомлення в БД: {e}")
+    finally:
+        conn.close()
 
-# Перевірка на антиспам
+# 🔒 Антиспам
 def is_spam(user_id):
     now = datetime.now()
-
-    # Очищаємо старі записи (які більше ніж TIME_LIMIT)
-    user_message_count[user_id] = [timestamp for timestamp in user_message_count[user_id] if
-                                   now - timestamp < TIME_LIMIT]
-
+    user_message_count[user_id] = [t for t in user_message_count[user_id] if now - t < TIME_LIMIT]
     if len(user_message_count[user_id]) >= MESSAGE_LIMIT:
         return True
-
-    user_message_count[user_id].append(now)  # Додаємо нове повідомлення
+    user_message_count[user_id].append(now)
     return False
 
-# Обробка повідомлень
+# 📩 Обробка повідомлень
 async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     user = update.message.from_user
@@ -82,12 +87,9 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         "📋 В наявності", "🚗 Де авто?"
     ]
 
-    # Якщо це клієнт (не менеджер)
     if user_id != MANAGER_ID:
-        # Зберігаємо повідомлення
         save_message_to_db(user_id, username, text)
 
-        # Пересилаємо менеджеру
         msg = f"✉️ Повідомлення від @{username} (ID: {user_id}):\n{text}"
         try:
             await context.bot.send_message(chat_id=MANAGER_ID, text=msg)
@@ -96,62 +98,70 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         lowered = text.lower()
 
-        # Якщо натиснув кнопку — даємо відповідь по кнопці
         if text in keyboard_texts:
             if "де авто" in lowered:
-                await update.message.reply_text(
-                    "🚗 Щоб дізнатись статус доставки, надайте VIN-код або номер замовлення.\nМи перевіримо і повідомимо вам найближчим часом."
-                )
+                await update.message.reply_text("🚗 Щоб дізнатись статус доставки, надайте VIN-код або номер замовлення.")
             elif "хочу авто зі сша" in lowered:
                 await update.message.reply_text(
-                    "👋 Щоб розпочати процес доставки авто, заповніть форму: https://forms.gle/BXkuZr9C5qEJHijd7 "
-                    "\n\n ❗️Обов'язково прогляньте наш договір перед тим як заповнювати анкету! \n Натисніть: /agreement"
+                    "👋 Щоб розпочати процес доставки авто, заповніть форму: https://forms.gle/BXkuZr9C5qEJHijd7\n\n"
+                    "❗️Обов'язково ознайомтесь з нашим договором перед заповненням! /agreement"
                 )
             elif "контакт" in lowered or "телефон" in lowered:
-                await update.message.reply_text("📞 Наш менеджер зателефонує найближчим часом. Телефон: +380673951195")
+                await update.message.reply_text("📞 Наш менеджер зв'яжеться з вами. Телефон: +380673951195")
             elif "в наявності" in lowered or "які авто" in lowered:
-                data = get_spreadsheet_data()
-                await update.message.reply_text(data, parse_mode="Markdown")
+                await update.message.reply_text("📋 Наразі ця функція в розробці. Дані скоро з'являться.")
         elif "faq" in lowered or "питання" in lowered:
-                await update.message.reply_text("Ром, де машина? - виберіть кнопку 'де авто', і ми надамо вам відповідь")
+            await update.message.reply_text("❓ Щоб дізнатись статус замовлення, натисніть '🚗 Де авто?'")
         else:
-            # Якщо це не кнопка — пишемо про надсилання повідомлення
-            await update.message.reply_text("✅ Повідомлення надіслано менеджеру. Очікуйте відповідь.")
-
-    # Якщо це менеджер
+            await update.message.reply_text("✅ Ваше повідомлення надіслано менеджеру.")
     else:
-        pass
+        pass  # менеджер нічого не робить тут
 
-# Команда /agreement для надсилання посилання на Google Docs документ
-# Команда /agreement для надсилання посилання на Google Docs документ з гіперпосиланням
+# 📄 Відправка договору
 async def agreement(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    agreement_link = "https://docs.google.com/document/d/1VSmsVevCBc0BCSVnsJgdkwlZRWDY_hhjIbcnzPpsOVg/edit?usp=sharing/view"  # Замінити на реальний ID документа
+    link = "https://docs.google.com/document/d/1VSmsVevCBc0BCSVnsJgdkwlZRWDY_hhjIbcnzPpsOVg/edit?usp=sharing/view"
     await update.message.reply_text(
-        f"📄 Ось наш договір \n\n [Посилання]({agreement_link})\n\nПеред тим як заповнити форму, будь ласка, ознайомтесь з умовами договору.",
+        f"📄 Ось наш договір:\n\n[Посилання]({link})",
         parse_mode="Markdown"
     )
 
-# Клавіатура
-def get_main_keyboard():
-    return ReplyKeyboardMarkup([
-        ["📥 Хочу авто зі США", "❓FAQ"],
-        ["🚗 Де авто?", "📞 Контакт"],
-        ["📋 В наявності"]
-    ], resize_keyboard=True)
-
-# Стартова команда
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Привіт! Вас вітає підтримка RDMOTORS! Оберіть одне з частих питань або напишіть своє.",
-        reply_markup=get_main_keyboard()
-    )
-
-# Команда /reply
-async def reply_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# 🧾 Показ останніх повідомлень
+async def show_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != MANAGER_ID:
         await update.message.reply_text("❌ У вас немає доступу.")
         return
 
+    try:
+        conn = sqlite3.connect('client_messages.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT timestamp, user_id, username, message
+            FROM messages
+            ORDER BY id DESC
+            LIMIT 10
+        ''')
+        rows = cursor.fetchall()
+        conn.close()
+
+        if not rows:
+            await update.message.reply_text("⚠️ Повідомлень ще немає.")
+            return
+
+        text = "🗂 Останні 10 повідомлень:\n\n"
+        for row in rows:
+            ts, uid, uname, msg = row
+            text += f"🕒 {ts}\n👤 @{uname} (ID: {uid})\n💬 {msg}\n\n"
+
+        await update.message.reply_text(text[:4096])
+    except Exception as e:
+        logger.error(f"Помилка при читанні з БД: {e}")
+        await update.message.reply_text("⚠️ Не вдалося отримати повідомлення з бази.")
+
+# 🔁 Відповідь менеджера користувачу
+async def reply_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != MANAGER_ID:
+        await update.message.reply_text("❌ У вас немає доступу.")
+        return
     if len(context.args) < 2:
         await update.message.reply_text("⚠️ Формат: /reply <user_id> <текст>")
         return
@@ -165,16 +175,33 @@ async def reply_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(e)
         await update.message.reply_text(f"⚠️ Не вдалося надіслати повідомлення: {e}")
 
-# Головна функція
+# 🔘 Кнопки
+def get_main_keyboard():
+    return ReplyKeyboardMarkup([
+        ["📥 Хочу авто зі США", "❓FAQ"],
+        ["🚗 Де авто?", "📞 Контакт"],
+        ["📋 В наявності"]
+    ], resize_keyboard=True)
 
+# ▶️ Команда старту
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Привіт! Вас вітає підтримка RDMOTORS. Оберіть дію або напишіть повідомлення.",
+        reply_markup=get_main_keyboard()
+    )
+
+# 🚀 Запуск
 def main():
+    init_db()  # Ініціалізуємо базу
     app = Application.builder().token(API_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("reply", reply_command))
     app.add_handler(CommandHandler("agreement", agreement))
+    app.add_handler(CommandHandler("reply", reply_command))
+    app.add_handler(CommandHandler("messages", show_messages))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_user_message))
 
+    logger.info("Бот запущено.")
     app.run_polling()
 
 if __name__ == "__main__":
