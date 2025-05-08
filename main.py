@@ -96,6 +96,7 @@ async def update_vin_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         with SessionLocal() as db:  # Отримуємо сесію з пулу
             existing_car_status = db.query(CarStatus).filter(CarStatus.vin == vin).first()
+
             if existing_car_status:
                 existing_car_status.status = status
                 existing_car_status.updated_at = now
@@ -120,6 +121,8 @@ def get_car_status_by_vin(vin):
                 return car_status.status, car_status.updated_at
             else:
                 logger.debug(f"Не знайдено статусу для VIN {vin}")
+
+                db.commit()
         return None
     except Exception as e:
         logger.error(f"Помилка при пошуку VIN у car_status.db: {e}")
