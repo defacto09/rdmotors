@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="382ce8e2-ab95-4864-838c-278f72255ab6" name="rdmotors" comment="rdmotors 0.6">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-    </list>
+    <list default="true" id="382ce8e2-ab95-4864-838c-278f72255ab6" name="rdmotors" comment="rdmotors 0.6" />
     <list id="b7791cbd-d990-40e9-a5df-dbb7f2e1d9bf" name="Changes" comment="rdmotors" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -305,7 +302,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746732181629</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="rdmotors 0.6">
+      <option name="closed" value="true" />
+      <created>1746734542246</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1746734542246</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <option name="createBranch" value="false" />
     <option name="useBranch" value="true" />
     <option name="searchClosedTasks" value="true" />
