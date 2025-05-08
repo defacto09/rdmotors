@@ -180,7 +180,17 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                     except Exception as e:
                         logger.error(f"Не вдалося надіслати фото {car['photo']}: {e}")
             elif "faq" in lowered or "питання" in lowered:
-                await update.message.reply_text("❓ Щоб дізнатись статус замовлення, натисніть '🚗 Де авто?'")
+                        link = "https://docs.google.com/document/d/1VSmsVevCBc0BCSVnsJgdkwlZRWDY_hhjIbcnzPpsOVg/edit?usp=sharing"
+                        await update.message.reply_text(
+                            f"🚙 Натиснувши *'📥 Хочу авто зі США'* ви зможете розпочати процес покупки авто.\n\n"
+                            f"❓ Щоб дізнатись статус замовлення, натисніть *'🚗 Де авто?'*.\n\n"
+                            f"💵 Всі ціни залежать від багатьох факторів, щоб більше дізнатись про це, перегляньте наш [договір]({link}).\n\n"
+                            f"☎️ Якщо ви хочете термінову відповідь по вашому запиті, то можете звернутись за контактом у *📞 Контакт*\n\n"
+                            f"🚘 Бажаєте дізнатись про наявні авто RDMOTORS у продажі? Знайдете відповідь у *'📋 В наявності'*\n\n"
+                            f"_За інакшими питаннями пишіть в чат, менеджер зв'яжеться з вами_",
+                            parse_mode="Markdown",
+                            disable_web_page_preview = True
+                        )
         else:
             await update.message.reply_text("✅ Ваше повідомлення надіслано менеджеру.")
     else:
@@ -191,7 +201,8 @@ async def agreement(update: Update, context: ContextTypes.DEFAULT_TYPE):
     link = "https://docs.google.com/document/d/1VSmsVevCBc0BCSVnsJgdkwlZRWDY_hhjIbcnzPpsOVg/edit?usp=sharing/view"
     await update.message.reply_text(
         f"📄 Ось наш договір:\n\n[Посилання]({link})",
-        parse_mode="Markdown"
+        parse_mode="Markdown",
+        disable_web_page_preview=True
     )
 
 # 🧾 Показ останніх повідомлень
