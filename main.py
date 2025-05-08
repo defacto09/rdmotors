@@ -1,14 +1,56 @@
 import os
-import sqlite3
 import logging
-from oauth2client.service_account import ServiceAccountCredentials
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 from datetime import datetime, timedelta
 from collections import defaultdict
 from dotenv import load_dotenv
-
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
 load_dotenv()
+
+# Створення базового класу для моделей
+Base = declarative_base()
+
+# Створення таблиць через SQLAlchemy
+class Message(Base):
+    __tablename__ = 'messages'
+
+    id = Column(Integer, primary_key=True, index=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    user_id = Column(Integer, index=True)
+    username = Column(String)
+    message = Column(String)
+
+class CarStatus(Base):
+    __tablename__ = 'car_status'
+
+    vin = Column(String, primary_key=True)
+    status = Column(String)
+    updated_at = Column(DateTime)
+
+# Налаштування пулу підключень до SQLite
+DATABASE_URL = "sqlite:///rdmotors.db"
+
+# Створюємо engine для з'єднання з базою даних
+engine = create_engine(DATABASE_URL, pool_size=5, max_overflow=10, echo=True)
+
+# Створюємо сесію
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Функція для отримання сесії
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Створення таблиць, якщо вони ще не існують
+Base.metadata.create_all(bind=engine)
+
+
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
@@ -19,53 +61,16 @@ MESSAGE_LIMIT = 5
 TIME_LIMIT = timedelta(minutes=1)
 user_message_count = defaultdict(list)
 
-# 📦 Ініціалізація SQLite
-def init_db():
-    conn = sqlite3.connect('client_messages.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            user_id INTEGER,
-            username TEXT,
-            message TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
-    logger.debug("SQLite база даних ініціалізована.")
-
-def init_car_status_db():
-    conn = sqlite3.connect('car_status.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS car_status (
-            vin TEXT PRIMARY KEY,
-            status TEXT,
-            updated_at TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
-    logger.debug("SQLite база даних car ініціалізовано")
-
-# 💾 Збереження повідомлення в SQLite
 def save_message_to_db(user_id, username, message_text):
-    try:
-        conn = sqlite3.connect('client_messages.db')
-        cursor = conn.cursor()
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        cursor.execute('''
-            INSERT INTO messages (timestamp, user_id, username, message)
-            VALUES (?, ?, ?, ?)
-        ''', (timestamp, user_id, username, message_text))
-        conn.commit()
-        logger.debug(f"Збережено повідомлення від @{username} (ID: {user_id})")
-    except Exception as e:
-        logger.error(f"Не вдалося зберегти повідомлення в БД: {e}")
-    finally:
-        conn.close()
+    with SessionLocal() as db:
+        message = Message(
+            user_id=user_id,
+            username=username,
+            message=message_text,
+            timestamp=datetime.now()
+        )
+        db.add(message)
+        db.commit()
 
 # 🔒 Антиспам
 def is_spam(user_id):
@@ -86,18 +91,21 @@ async def update_vin_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     vin = context.args[0].upper()
     status = " ".join(context.args[1:])
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now = datetime.now()
 
     try:
-        conn = sqlite3.connect('car_status.db')
-        cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO car_status (vin, status, updated_at)
-            VALUES (?, ?, ?)
-            ON CONFLICT(vin) DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at
-        ''', (vin, status, now))
-        conn.commit()
-        conn.close()
+        with SessionLocal() as db:  # Отримуємо сесію з пулу
+            existing_car_status = db.query(CarStatus).filter(CarStatus.vin == vin).first()
+            if existing_car_status:
+                existing_car_status.status = status
+                existing_car_status.updated_at = now
+            else:
+                car_status = CarStatus(vin=vin, status=status, updated_at=now)
+                db.add(car_status)
+
+            db.commit()
+            db.refresh(existing_car_status or car_status)
+
         await update.message.reply_text(f"✅ Статус для VIN {vin} оновлено:\n📍 {status}")
     except Exception as e:
         logger.error(f"Помилка при оновленні car_status: {e}")
@@ -105,20 +113,17 @@ async def update_vin_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def get_car_status_by_vin(vin):
     try:
-        conn = sqlite3.connect('car_status.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT status, updated_at FROM car_status WHERE vin = ?", (vin,))
-        result = cursor.fetchone()
-        conn.close()
-        if result:
-            logger.debug(f"Знайдений статус для VIN {vin}: {result}")
-        else:
-            logger.debug(f"Не знайдено статусу для VIN {vin}")
-        return result
+        with SessionLocal() as db:  # Отримуємо сесію з пулу
+            car_status = db.query(CarStatus).filter(CarStatus.vin == vin).first()
+            if car_status:
+                logger.debug(f"Знайдений статус для VIN {vin}: {car_status.status}")
+                return car_status.status, car_status.updated_at
+            else:
+                logger.debug(f"Не знайдено статусу для VIN {vin}")
+        return None
     except Exception as e:
         logger.error(f"Помилка при пошуку VIN у car_status.db: {e}")
         return None
-
 
 # 📩 Обробка повідомлень
 async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -206,38 +211,23 @@ async def agreement(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 # 🧾 Показ останніх повідомлень
-async def show_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != MANAGER_ID:
-        await update.message.reply_text("❌ У вас немає доступу.")
-        return
-
+async def get_last_messages(update: Update, context: ContextTypes.DEFAULT_TYPE, limit=10):
     try:
-        conn = sqlite3.connect('client_messages.db')
-        cursor = conn.cursor()
-        cursor.execute('''
-            SELECT timestamp, user_id, username, message
-            FROM messages
-            ORDER BY id DESC
-            LIMIT 10
-        ''')
-        rows = cursor.fetchall()
-        conn.close()
-
-        if not rows:
+        with SessionLocal() as db:
+            messages = db.query(Message).order_by(Message.id.desc()).limit(limit).all()
+        if not messages:
             await update.message.reply_text("⚠️ Повідомлень ще немає.")
             return
 
         text = "🗂 Останні 10 повідомлень:\n\n"
-        for row in rows:
-            ts, uid, uname, msg = row
-            text += f"🕒 {ts}\n👤 @{uname} (ID: {uid})\n💬 {msg}\n\n"
+        for m in messages:
+            text += f"🕒 {m.timestamp}\n👤 @{m.username} (ID: {m.user_id})\n💬 {m.message}\n\n"
 
         await update.message.reply_text(text[:4096])
     except Exception as e:
-        logger.error(f"Помилка при читанні з БД: {e}")
+        logger.error(f"Помилка при запиті: {e}")
         await update.message.reply_text("⚠️ Не вдалося отримати повідомлення з бази.")
-
-# 🔁 Відповідь менеджера користувачу
+# Відповідь менеджера користувачу
 async def reply_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != MANAGER_ID:
         await update.message.reply_text("❌ У вас немає доступу.")
@@ -272,13 +262,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # 🚀 Запуск
 def main():
-    init_db()  # Ініціалізуємо базу
-    init_car_status_db() # Ініціалізуємо базу даних статусу авто
+    if not API_TOKEN:
+        logger.error("❌ Не задано TELEGRAM_API_TOKEN у .env")
+        return
     app = Application.builder().token(API_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("agreement", agreement))
     app.add_handler(CommandHandler("reply", reply_command))
-    app.add_handler(CommandHandler("messages", show_messages))
+    app.add_handler(CommandHandler("messages", get_last_messages))
     app.add_handler(CommandHandler("vinstatus", update_vin_status))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_user_message))
 
