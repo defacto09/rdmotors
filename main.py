@@ -50,7 +50,6 @@ def get_db():
 # Створення таблиць, якщо вони ще не існують
 Base.metadata.create_all(bind=engine)
 
-
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
