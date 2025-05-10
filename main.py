@@ -31,10 +31,11 @@ class CarStatus(Base):
     updated_at = Column(DateTime)
 
 # Налаштування пулу підключень до SQLite
-DATABASE_URL = "sqlite:///rdmotors.db"
+DATABASE_URL ="sqlite:///app/rdmotors.db"
 
 # Створюємо engine для з'єднання з базою даних
 engine = create_engine(DATABASE_URL, pool_size=5, max_overflow=10, echo=True)
+engine = create_engine("sqlite:///rdmotors.db", echo=True)
 
 # Створюємо сесію
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
