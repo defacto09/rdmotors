@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  telegram-bot:
+    build: .
+    container_name: rdmotors_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./rdmotors.db:/app/rdmotors.db  # Монтує локальну базу всередину контейнера
+    command: python main.py

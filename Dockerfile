@@ -1,13 +1,20 @@
-# Вказуємо базовий образ
+# Базовий образ
 FROM python:3.11-slim
 
-# Копіюємо файли в контейнер
-COPY . /app
+# Створити робочу директорію
 WORKDIR /app
-RUN mkdir -p /app/db
 
-# Встановлюємо залежності
-RUN pip install -r requirements.txt
+# Скопіювати залежності
+COPY requirements.txt .
 
-# Запускаємо додаток
+# Встановити залежності
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Скопіювати весь проєкт у контейнер
+COPY . .
+
+# Вказати змінну середовища (можна перевизначити через -e DB_PATH=...)
+ENV DB_PATH=/app/data/rdmotors.db
+
+# Запуск бота
 CMD ["python", "main.py"]
