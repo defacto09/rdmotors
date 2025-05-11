@@ -31,7 +31,7 @@ class CarStatus(Base):
     updated_at = Column(DateTime)
 
 # Налаштування пулу підключень до SQLite
-DATABASE_URL = "sqlite:////Users/defacto092/PycharmProjects/PythonProject1/database/rdmotors.db"
+DATABASE_URL = "sqlite:///database/rdmotors.db"
 
 # Створюємо engine для з'єднання з базою даних
 engine = create_engine(DATABASE_URL, pool_size=5, max_overflow=10, echo=True)

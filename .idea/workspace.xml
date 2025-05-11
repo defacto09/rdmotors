@@ -6,11 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="382ce8e2-ab95-4864-838c-278f72255ab6" name="rdmotors" comment="rdmotors 1.0">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/rdmotors.db" beforeDir="false" afterPath="$PROJECT_DIR$/database/rdmotors.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rdmotors.db" beforeDir="false" />
     </list>
     <list id="b7791cbd-d990-40e9-a5df-dbb7f2e1d9bf" name="Changes" comment="rdmotors" />
     <option name="SHOW_DIALOG" value="false" />
@@ -410,7 +407,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746960650137</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="rdmotors 1.0">
+      <option name="closed" value="true" />
+      <created>1746962456829</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1746962456829</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <option name="createBranch" value="false" />
     <option name="useBranch" value="true" />
     <option name="searchClosedTasks" value="true" />
