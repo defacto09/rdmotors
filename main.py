@@ -31,11 +31,10 @@ class CarStatus(Base):
     updated_at = Column(DateTime)
 
 # Налаштування пулу підключень до SQLite
-DATABASE_URL ="sqlite:///app/rdmotors.db"
+DATABASE_URL = "sqlite:///rdmotors.db"
 
 # Створюємо engine для з'єднання з базою даних
 engine = create_engine(DATABASE_URL, pool_size=5, max_overflow=10, echo=True)
-engine = create_engine("sqlite:///rdmotors.db", echo=True)
 
 # Створюємо сесію
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -62,15 +61,19 @@ TIME_LIMIT = timedelta(minutes=1)
 user_message_count = defaultdict(list)
 
 def save_message_to_db(user_id, username, message_text):
-    with SessionLocal() as db:
-        message = Message(
-            user_id=user_id,
-            username=username,
-            message=message_text,
-            timestamp=datetime.now()
-        )
-        db.add(message)
-        db.commit()
+    try:
+        with SessionLocal() as db:
+            message = Message(
+                user_id=user_id,
+                username=username,
+                message=message_text,
+                timestamp=datetime.now()
+            )
+            db.add(message)
+            db.commit()
+    except Exception as e:
+        logger.error(f"❌ Помилка збереження повідомлення до бази: {e}")
+
 
 # 🔒 Антиспам
 def is_spam(user_id):
