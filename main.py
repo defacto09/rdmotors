@@ -61,15 +61,26 @@ TIME_LIMIT = timedelta(minutes=1)
 user_message_count = defaultdict(list)
 
 def save_message_to_db(user_id, username, message_text):
-    with SessionLocal() as db:
-        message = Message(
-            user_id=user_id,
-            username=username,
-            message=message_text,
-            timestamp=datetime.now()
-        )
-        db.add(message)
-        db.commit()
+    try:
+        # Отримуємо сесію
+        with SessionLocal() as db:
+            # Створюємо новий об'єкт повідомлення
+            message = Message(
+                user_id=user_id,
+                username=username,
+                message=message_text,
+                timestamp=datetime.now()
+            )
+            # Додаємо повідомлення до сесії
+            db.add(message)
+            # Комітимо зміни
+            db.commit()
+            # Оновлюємо об'єкт після коміту, щоб отримати id
+            db.refresh(message)
+            logger.info(f"Повідомлення від @{username} успішно збережене.")
+    except Exception as e:
+        logger.error(f"Помилка при збереженні повідомлення в базу: {e}")
+
 
 # 🔒 Антиспам
 def is_spam(user_id):
@@ -134,11 +145,23 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     user_id = user.id
     username = user.username or "(без username)"
 
+    # 🔒 Антиспам
     if is_spam(user_id):
         await update.message.reply_text("❗ Ви перевищили ліміт повідомлень. Спробуйте пізніше.")
         return
 
-    elif len(text) == 17 and text.isalnum():
+    # ✅ Зберігаємо повідомлення в базу одразу, незалежно від змісту
+    if user_id != MANAGER_ID:
+        save_message_to_db(user_id, username, text)
+
+        msg = f"✉️ Повідомлення від @{username} (ID: {user_id}):\n{text}"
+        try:
+            await context.bot.send_message(chat_id=MANAGER_ID, text=msg)
+        except Exception as e:
+            logger.error(f"Не вдалося переслати менеджеру: {e}")
+
+    # 🔍 Перевірка, чи це VIN-код
+    if len(text) == 17 and text.isalnum():
         result = get_car_status_by_vin(text.upper())
         if result:
             status, updated = result
@@ -147,6 +170,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         else:
             await update.message.reply_text(
                 "⚠️ Авто з таким VIN-кодом не знайдено в базі. Зачекайте оновлення менеджером.")
+        return
 
     keyboard_texts = [
         "📥 Хочу авто зі США", "❓FAQ", "📞 Контакт",
