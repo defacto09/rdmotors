@@ -1,5 +1,5 @@
 # Базовий образ
-FROM python:3.11-slim
+FROM --platform=linux/amd64 python:3.9-slim
 
 # Створити робочу директорію
 WORKDIR /app
