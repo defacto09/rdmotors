@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Вказати змінну середовища (можна перевизначити через -e DB_PATH=...)
-ENV DB_PATH=/app/data/rdmotors.db
+ENV DB_PATH=/app/database/rdmotors.db
 
 # Запуск бота
 CMD ["python", "main.py"]
