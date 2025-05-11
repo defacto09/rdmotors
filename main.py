@@ -31,7 +31,7 @@ class CarStatus(Base):
     updated_at = Column(DateTime)
 
 # Налаштування пулу підключень до SQLite
-DATABASE_URL = "sqlite:///rdmotors.db"
+DATABASE_URL = "sqlite:////Users/defacto092/PycharmProjects/PythonProject1/database/rdmotors.db"
 
 # Створюємо engine для з'єднання з базою даних
 engine = create_engine(DATABASE_URL, pool_size=5, max_overflow=10, echo=True)
@@ -61,19 +61,15 @@ TIME_LIMIT = timedelta(minutes=1)
 user_message_count = defaultdict(list)
 
 def save_message_to_db(user_id, username, message_text):
-    try:
-        with SessionLocal() as db:
-            message = Message(
-                user_id=user_id,
-                username=username,
-                message=message_text,
-                timestamp=datetime.now()
-            )
-            db.add(message)
-            db.commit()
-    except Exception as e:
-        logger.error(f"❌ Помилка збереження повідомлення до бази: {e}")
-
+    with SessionLocal() as db:
+        message = Message(
+            user_id=user_id,
+            username=username,
+            message=message_text,
+            timestamp=datetime.now()
+        )
+        db.add(message)
+        db.commit()
 
 # 🔒 Антиспам
 def is_spam(user_id):
@@ -174,7 +170,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             elif "хочу авто зі сша" in lowered:
                 await update.message.reply_text(
                     "👋 Щоб розпочати процес доставки авто, заповніть форму: https://forms.gle/BXkuZr9C5qEJHijd7\n\n"
-                    "❗️Обов'язково ознайомтесь з нашим договором перед заповненням! \n/agreement"
+                    "❗️Обов'язково ознайомтесь з нашим договором перед заповненням! /agreement"
                 )
             elif "контакт" in lowered or "телефон" in lowered:
                 await update.message.reply_text("📞 Наш менеджер зв'яжеться з вами. Телефон: +380673951195")

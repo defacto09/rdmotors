@@ -8,5 +8,5 @@ services:
     env_file:
       - .env
     volumes:
-      - ./rdmotors.db:/app/rdmotors.db  # Монтує локальну базу всередину контейнера
+      - ./database:/app/database # Монтує локальну базу всередину контейнера
     command: python main.py
