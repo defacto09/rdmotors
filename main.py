@@ -1,5 +1,6 @@
 import os
 import logging
+import mysql.connector
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 from datetime import datetime, timedelta
@@ -31,10 +32,16 @@ class CarStatus(Base):
     updated_at = Column(DateTime)
 
 # Налаштування пулу підключень до SQLite
-DATABASE_URL = "sqlite:///database/rdmotors.db"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Створюємо engine для з'єднання з базою даних
 engine = create_engine(DATABASE_URL, pool_size=5, max_overflow=10, echo=True)
+try:
+    # Спробуємо підключитись до бази
+    with engine.connect() as connection:
+        print("Підключення до бази даних успішне!")
+except Exception as e:
+    print(f"Помилка при підключенні до бази даних: {e}")
 
 # Створюємо сесію
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
