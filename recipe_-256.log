@@ -1,0 +1,132 @@
+Unit qemu-guest-agent.service could not be found.
+Hit:1 http://de.archive.ubuntu.com/ubuntu jammy InRelease
+Get:2 http://de.archive.ubuntu.com/ubuntu jammy-updates InRelease [128 kB]
+Get:3 http://de.archive.ubuntu.com/ubuntu jammy-backports InRelease [127 kB]
+Get:4 http://de.archive.ubuntu.com/ubuntu jammy-security InRelease [129 kB]
+Get:5 http://de.archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [2,556 kB]
+Get:6 http://de.archive.ubuntu.com/ubuntu jammy-updates/main Translation-en [415 kB]
+Get:7 http://de.archive.ubuntu.com/ubuntu jammy-updates/main amd64 c-n-f Metadata [18.5 kB]
+Get:8 http://de.archive.ubuntu.com/ubuntu jammy-updates/restricted amd64 Packages [3,485 kB]
+Get:9 http://de.archive.ubuntu.com/ubuntu jammy-updates/restricted Translation-en [620 kB]
+Get:10 http://de.archive.ubuntu.com/ubuntu jammy-updates/restricted amd64 c-n-f Metadata [676 B]
+Get:11 http://de.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [1,203 kB]
+Get:12 http://de.archive.ubuntu.com/ubuntu jammy-updates/universe Translation-en [297 kB]
+Get:13 http://de.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 c-n-f Metadata [28.7 kB]
+Get:14 http://de.archive.ubuntu.com/ubuntu jammy-updates/multiverse amd64 Packages [46.5 kB]
+Get:15 http://de.archive.ubuntu.com/ubuntu jammy-updates/multiverse Translation-en [11.8 kB]
+Get:16 http://de.archive.ubuntu.com/ubuntu jammy-updates/multiverse amd64 c-n-f Metadata [592 B]
+Get:17 http://de.archive.ubuntu.com/ubuntu jammy-backports/main amd64 Packages [68.8 kB]
+Get:18 http://de.archive.ubuntu.com/ubuntu jammy-backports/main Translation-en [11.4 kB]
+Get:19 http://de.archive.ubuntu.com/ubuntu jammy-backports/main amd64 c-n-f Metadata [392 B]
+Get:20 http://de.archive.ubuntu.com/ubuntu jammy-backports/universe amd64 Packages [30.0 kB]
+Get:21 http://de.archive.ubuntu.com/ubuntu jammy-backports/universe Translation-en [16.5 kB]
+Get:22 http://de.archive.ubuntu.com/ubuntu jammy-backports/universe amd64 c-n-f Metadata [672 B]
+Get:23 http://de.archive.ubuntu.com/ubuntu jammy-security/main amd64 Packages [2,311 kB]
+Get:24 http://de.archive.ubuntu.com/ubuntu jammy-security/main Translation-en [352 kB]
+Get:25 http://de.archive.ubuntu.com/ubuntu jammy-security/main amd64 c-n-f Metadata [13.6 kB]
+Get:26 http://de.archive.ubuntu.com/ubuntu jammy-security/restricted amd64 Packages [3,366 kB]
+Get:27 http://de.archive.ubuntu.com/ubuntu jammy-security/restricted Translation-en [601 kB]
+Get:28 http://de.archive.ubuntu.com/ubuntu jammy-security/restricted amd64 c-n-f Metadata [624 B]
+Get:29 http://de.archive.ubuntu.com/ubuntu jammy-security/universe amd64 Packages [974 kB]
+Get:30 http://de.archive.ubuntu.com/ubuntu jammy-security/universe Translation-en [210 kB]
+Get:31 http://de.archive.ubuntu.com/ubuntu jammy-security/universe amd64 c-n-f Metadata [21.7 kB]
+Get:32 http://de.archive.ubuntu.com/ubuntu jammy-security/multiverse amd64 Packages [39.6 kB]
+Get:33 http://de.archive.ubuntu.com/ubuntu jammy-security/multiverse Translation-en [8,716 B]
+Get:34 http://de.archive.ubuntu.com/ubuntu jammy-security/multiverse amd64 c-n-f Metadata [368 B]
+Fetched 17.1 MB in 1min 45s (162 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  liburing2
+The following NEW packages will be installed:
+  liburing2 qemu-guest-agent
+0 upgraded, 2 newly installed, 0 to remove and 293 not upgraded.
+Need to get 261 kB of archives.
+After this operation, 906 kB of additional disk space will be used.
+Get:1 http://de.archive.ubuntu.com/ubuntu jammy/main amd64 liburing2 amd64 2.1-2build1 [10.3 kB]
+Get:2 http://de.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 qemu-guest-agent amd64 1:6.2+dfsg-2ubuntu6.26 [251 kB]
+dpkg-preconfigure: unable to re-open stdin: No such file or directory
+Fetched 261 kB in 0s (1,203 kB/s)
+Selecting previously unselected package liburing2:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 108988 files and directories currently installed.)
+Preparing to unpack .../liburing2_2.1-2build1_amd64.deb ...
+Unpacking liburing2:amd64 (2.1-2build1) ...
+Selecting previously unselected package qemu-guest-agent.
+Preparing to unpack .../qemu-guest-agent_1%3a6.2+dfsg-2ubuntu6.26_amd64.deb ...
+Unpacking qemu-guest-agent (1:6.2+dfsg-2ubuntu6.26) ...
+Setting up liburing2:amd64 (2.1-2build1) ...
+Setting up qemu-guest-agent (1:6.2+dfsg-2ubuntu6.26) ...
+qemu-guest-agent.service is a disabled or a static unit, not starting it.
+Processing triggers for libc-bin (2.35-0ubuntu3.1) ...
+Processing triggers for man-db (2.10.2-1) ...
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+Synchronizing state of qemu-guest-agent.service with SysV service script with /lib/systemd/systemd-sysv-install.
+Executing: /lib/systemd/systemd-sysv-install enable qemu-guest-agent
+The unit files have no installation config (WantedBy=, RequiredBy=, Also=,
+Alias= settings in the [Install] section, and DefaultInstance= for template
+units). This means they are not meant to be enabled using systemctl.
+ 
+Possible reasons for having this kind of units are:
+• A unit may be statically enabled by being symlinked from another unit's
+  .wants/ or .requires/ directory.
+• A unit's purpose may be to act as a helper for some other unit which has
+  a requirement dependency on it.
+• A unit may be started when needed via activation (socket, path, timer,
+  D-Bus, udev, scripted systemctl call, ...).
+• In case of template units, the unit is meant to be enabled with some
+  instance name specified.
+cat: /etc/redhat-release: No such file or directory
+
+sed: invalid option -- 'c'
+Usage: sed [OPTION]... {script-only-if-no-other-script} [input-file]...
+
+  -n, --quiet, --silent
+                 suppress automatic printing of pattern space
+      --debug
+                 annotate program execution
+  -e script, --expression=script
+                 add the script to the commands to be executed
+  -f script-file, --file=script-file
+                 add the contents of script-file to the commands to be executed
+  --follow-symlinks
+                 follow symlinks when processing in place
+  -i[SUFFIX], --in-place[=SUFFIX]
+                 edit files in place (makes backup if SUFFIX supplied)
+  -l N, --line-length=N
+                 specify the desired line-wrap length for the `l' command
+  --posix
+                 disable all GNU extensions.
+  -E, -r, --regexp-extended
+                 use extended regular expressions in the script
+                 (for portability use POSIX -E).
+  -s, --separate
+                 consider files as separate rather than as a single,
+                 continuous long stream.
+      --sandbox
+                 operate in sandbox mode (disable e/r/w commands).
+  -u, --unbuffered
+                 load minimal amounts of data from the input files and flush
+                 the output buffers more often
+  -z, --null-data
+                 separate lines by NUL characters
+      --help     display this help and exit
+      --version  output version information and exit
+
+If no -e, --expression, -f, or --file option is given, then the first
+non-option argument is taken as the sed script to interpret.  All
+remaining arguments are names of input files; if no input files are
+specified, then the standard input is read.
+
+GNU sed home page: <https://www.gnu.org/software/sed/>.
+General help using GNU software: <https://www.gnu.org/gethelp/>.

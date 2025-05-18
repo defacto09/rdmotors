@@ -1,0 +1,22 @@
+[0;1;32m●[0m docker.service - Docker Application Container Engine
+     Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
+     Active: [0;1;32mactive (running)[0m since Sun 2025-05-11 12:55:23 UTC; 28s ago
+TriggeredBy: [0;1;32m●[0m docker.socket
+       Docs: https://docs.docker.com
+   Main PID: 60661 (dockerd)
+      Tasks: 7
+     Memory: 19.4M
+        CPU: 512ms
+     CGroup: /system.slice/docker.service
+             └─60661 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+
+May 11 12:55:23 server9108.server-vps.com dockerd[60661]: time="2025-05-11T12:55:23.212037053Z" level=info msg="[graphdriver] using prior storage driver: overlay2"
+May 11 12:55:23 server9108.server-vps.com dockerd[60661]: time="2025-05-11T12:55:23.213019889Z" level=info msg="Loading containers: start."
+May 11 12:55:23 server9108.server-vps.com dockerd[60661]: time="2025-05-11T12:55:23.559828161Z" level=warning msg="Error (Unable to complete atomic operation, key modified) deleting object [endpoint_count 8bd01c31be48d6a68f579f92c7c54d568944365396f44ac3a06c9ba838f86f4a], retrying...."
+May 11 12:55:23 server9108.server-vps.com dockerd[60661]: time="2025-05-11T12:55:23.613655419Z" level=info msg="Loading containers: done."
+May 11 12:55:23 server9108.server-vps.com dockerd[60661]: time="2025-05-11T12:55:23.644481242Z" level=info msg="Docker daemon" commit=01f442b containerd-snapshotter=false storage-driver=overlay2 version=28.1.1
+May 11 12:55:23 server9108.server-vps.com dockerd[60661]: time="2025-05-11T12:55:23.645000937Z" level=info msg="Initializing buildkit"
+May 11 12:55:23 server9108.server-vps.com dockerd[60661]: time="2025-05-11T12:55:23.669313872Z" level=info msg="Completed buildkit initialization"
+May 11 12:55:23 server9108.server-vps.com dockerd[60661]: time="2025-05-11T12:55:23.680235394Z" level=info msg="Daemon has completed initialization"
+May 11 12:55:23 server9108.server-vps.com dockerd[60661]: time="2025-05-11T12:55:23.680706292Z" level=info msg="API listen on /run/docker.sock"
+May 11 12:55:23 server9108.server-vps.com systemd[1]: Started Docker Application Container Engine.

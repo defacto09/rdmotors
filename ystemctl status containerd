@@ -1,0 +1,22 @@
+[0;1;32m●[0m docker.service - Docker Application Container Engine
+     Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
+     Active: [0;1;32mactive (running)[0m since Sun 2025-05-18 12:42:37 UTC; 4s ago
+TriggeredBy: [0;1;32m●[0m docker.socket
+       Docs: https://docs.docker.com
+   Main PID: 40092 (dockerd)
+      Tasks: 8
+     Memory: 20.1M
+        CPU: 366ms
+     CGroup: /system.slice/docker.service
+             └─40092 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+
+May 18 12:42:36 server9108.server-vps.com dockerd[40092]: time="2025-05-18T12:42:36.976689302Z" level=info msg="Creating a containerd client" address=/run/containerd/containerd.sock timeout=1m0s
+May 18 12:42:37 server9108.server-vps.com dockerd[40092]: time="2025-05-18T12:42:37.050742236Z" level=info msg="[graphdriver] using prior storage driver: overlay2"
+May 18 12:42:37 server9108.server-vps.com dockerd[40092]: time="2025-05-18T12:42:37.057375385Z" level=info msg="Loading containers: start."
+May 18 12:42:37 server9108.server-vps.com dockerd[40092]: time="2025-05-18T12:42:37.364071097Z" level=info msg="Loading containers: done."
+May 18 12:42:37 server9108.server-vps.com dockerd[40092]: time="2025-05-18T12:42:37.391979875Z" level=info msg="Docker daemon" commit=01f442b containerd-snapshotter=false storage-driver=overlay2 version=28.1.1
+May 18 12:42:37 server9108.server-vps.com dockerd[40092]: time="2025-05-18T12:42:37.392810662Z" level=info msg="Initializing buildkit"
+May 18 12:42:37 server9108.server-vps.com dockerd[40092]: time="2025-05-18T12:42:37.417884339Z" level=info msg="Completed buildkit initialization"
+May 18 12:42:37 server9108.server-vps.com dockerd[40092]: time="2025-05-18T12:42:37.437481497Z" level=info msg="Daemon has completed initialization"
+May 18 12:42:37 server9108.server-vps.com dockerd[40092]: time="2025-05-18T12:42:37.438030321Z" level=info msg="API listen on /run/docker.sock"
+May 18 12:42:37 server9108.server-vps.com systemd[1]: Started Docker Application Container Engine.

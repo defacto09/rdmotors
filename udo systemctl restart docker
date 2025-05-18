@@ -1,0 +1,40 @@
+May 11 12:48:17 server9108.server-vps.com systemd[1]: Starting Docker Application Container Engine...
+May 11 12:48:17 server9108.server-vps.com dockerd[57070]: time="2025-05-11T12:48:17.921990588Z" level=info msg="Starting up"
+May 11 12:48:19 server9108.server-vps.com dockerd[57070]: time="2025-05-11T12:48:19.118226020Z" level=info msg="Loading containers: start."
+May 11 12:48:20 server9108.server-vps.com dockerd[57070]: time="2025-05-11T12:48:20.283848829Z" level=info msg="Loading containers: done."
+May 11 12:48:20 server9108.server-vps.com dockerd[57070]: time="2025-05-11T12:48:20.316397732Z" level=info msg="Docker daemon" commit="26.1.3-0ubuntu1~22.04.1" containerd-snapshotter=false storage-driver=overlay2 version=26.1.3
+May 11 12:48:20 server9108.server-vps.com dockerd[57070]: time="2025-05-11T12:48:20.316959199Z" level=info msg="Daemon has completed initialization"
+May 11 12:48:20 server9108.server-vps.com dockerd[57070]: time="2025-05-11T12:48:20.383081223Z" level=info msg="API listen on /run/docker.sock"
+May 11 12:48:20 server9108.server-vps.com systemd[1]: Started Docker Application Container Engine.
+May 11 12:51:27 server9108.server-vps.com dockerd[57070]: time="2025-05-11T12:51:27.053731807Z" level=info msg="Processing signal 'terminated'"
+May 11 12:51:27 server9108.server-vps.com systemd[1]: Stopping Docker Application Container Engine...
+May 11 12:51:27 server9108.server-vps.com dockerd[57070]: time="2025-05-11T12:51:27.071179425Z" level=info msg="Daemon shutdown complete"
+May 11 12:51:27 server9108.server-vps.com systemd[1]: docker.service: Deactivated successfully.
+May 11 12:51:27 server9108.server-vps.com systemd[1]: Stopped Docker Application Container Engine.
+May 11 12:51:55 server9108.server-vps.com systemd[1]: Starting Docker Application Container Engine...
+May 11 12:51:55 server9108.server-vps.com dockerd[59116]: time="2025-05-11T12:51:55.691110923Z" level=info msg="Starting up"
+May 11 12:51:55 server9108.server-vps.com dockerd[59116]: failed to load listeners: no sockets found via socket activation: make sure the service was started by systemd
+May 11 12:51:55 server9108.server-vps.com systemd[1]: [0;1;39m[0;1;31m[0;1;39mdocker.service: Main process exited, code=exited, status=1/FAILURE[0m
+May 11 12:51:55 server9108.server-vps.com systemd[1]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mdocker.service: Failed with result 'exit-code'.[0m
+May 11 12:51:55 server9108.server-vps.com systemd[1]: [0;1;31m[0;1;39m[0;1;31mFailed to start Docker Application Container Engine.[0m
+May 11 12:51:57 server9108.server-vps.com systemd[1]: docker.service: Scheduled restart job, restart counter is at 1.
+May 11 12:51:57 server9108.server-vps.com systemd[1]: Stopped Docker Application Container Engine.
+May 11 12:51:57 server9108.server-vps.com systemd[1]: Starting Docker Application Container Engine...
+May 11 12:51:57 server9108.server-vps.com dockerd[59158]: time="2025-05-11T12:51:57.893641118Z" level=info msg="Starting up"
+May 11 12:51:57 server9108.server-vps.com dockerd[59158]: failed to load listeners: no sockets found via socket activation: make sure the service was started by systemd
+May 11 12:51:57 server9108.server-vps.com systemd[1]: [0;1;39m[0;1;31m[0;1;39mdocker.service: Main process exited, code=exited, status=1/FAILURE[0m
+May 11 12:51:57 server9108.server-vps.com systemd[1]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mdocker.service: Failed with result 'exit-code'.[0m
+May 11 12:51:57 server9108.server-vps.com systemd[1]: [0;1;31m[0;1;39m[0;1;31mFailed to start Docker Application Container Engine.[0m
+May 11 12:52:00 server9108.server-vps.com systemd[1]: docker.service: Scheduled restart job, restart counter is at 2.
+May 11 12:52:00 server9108.server-vps.com systemd[1]: Stopped Docker Application Container Engine.
+May 11 12:52:00 server9108.server-vps.com systemd[1]: Starting Docker Application Container Engine...
+May 11 12:52:00 server9108.server-vps.com dockerd[59182]: time="2025-05-11T12:52:00.139200007Z" level=info msg="Starting up"
+May 11 12:52:00 server9108.server-vps.com dockerd[59182]: failed to load listeners: no sockets found via socket activation: make sure the service was started by systemd
+May 11 12:52:00 server9108.server-vps.com systemd[1]: [0;1;39m[0;1;31m[0;1;39mdocker.service: Main process exited, code=exited, status=1/FAILURE[0m
+May 11 12:52:00 server9108.server-vps.com systemd[1]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mdocker.service: Failed with result 'exit-code'.[0m
+May 11 12:52:00 server9108.server-vps.com systemd[1]: [0;1;31m[0;1;39m[0;1;31mFailed to start Docker Application Container Engine.[0m
+May 11 12:52:02 server9108.server-vps.com systemd[1]: docker.service: Scheduled restart job, restart counter is at 3.
+May 11 12:52:02 server9108.server-vps.com systemd[1]: Stopped Docker Application Container Engine.
+May 11 12:52:02 server9108.server-vps.com systemd[1]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mdocker.service: Start request repeated too quickly.[0m
+May 11 12:52:02 server9108.server-vps.com systemd[1]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mdocker.service: Failed with result 'exit-code'.[0m
+May 11 12:52:02 server9108.server-vps.com systemd[1]: [0;1;31m[0;1;39m[0;1;31mFailed to start Docker Application Container Engine.[0m
