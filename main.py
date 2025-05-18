@@ -1,6 +1,5 @@
 import os
 import logging
-import mysql.connector
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 from datetime import datetime, timedelta
@@ -32,16 +31,10 @@ class CarStatus(Base):
     updated_at = Column(DateTime)
 
 # Налаштування пулу підключень до SQLite
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = "sqlite:///database/rdmotors.db"
 
 # Створюємо engine для з'єднання з базою даних
 engine = create_engine(DATABASE_URL, pool_size=5, max_overflow=10, echo=True)
-try:
-    # Спробуємо підключитись до бази
-    with engine.connect() as connection:
-        print("Підключення до бази даних успішне!")
-except Exception as e:
-    print(f"Помилка при підключенні до бази даних: {e}")
 
 # Створюємо сесію
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -63,7 +56,7 @@ logger = logging.getLogger()
 API_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
 MANAGER_ID = int(os.getenv("MANAGER_ID"))
 
-MESSAGE_LIMIT = 5
+MESSAGE_LIMIT = 7
 TIME_LIMIT = timedelta(minutes=1)
 user_message_count = defaultdict(list)
 
@@ -157,23 +150,26 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         await update.message.reply_text("❗ Ви перевищили ліміт повідомлень. Спробуйте пізніше.")
         return
 
-    # ✅ Зберігаємо повідомлення в базу одразу, незалежно від змісту
-    if user_id != MANAGER_ID:
-        save_message_to_db(user_id, username, text)
-
-        msg = f"✉️ Повідомлення від @{username} (ID: {user_id}):\n{text}"
-        try:
-            await context.bot.send_message(chat_id=MANAGER_ID, text=msg)
-        except Exception as e:
-            logger.error(f"Не вдалося переслати менеджеру: {e}")
 
     # 🔍 Перевірка, чи це VIN-код
     if len(text) == 17 and text.isalnum():
         result = get_car_status_by_vin(text.upper())
         if result:
             status, updated = result
+
+            # Розділяємо статус на крайню й наступну локацію
+            parts = status.split("|")
+            last_location = parts[0].strip() if len(parts) > 0 else "Невідомо"
+            next_location = parts[1].strip() if len(parts) > 1 else "Невідомо"
+
             await update.message.reply_text(
-                f"🔎 Статус авто: \n(VIN: {text.upper()}):\n📍 {status}\n🕒 Оновлено: {updated}")
+                f"🚗 *Статус авто*\n"
+                f"🔎 *VIN:* `{text.upper()}`\n"
+                f"📍 *Крайня локація:* {last_location}\n"
+                f"🧭 *Наступна зупинка:* {next_location}\n"
+                f"🕒 *Оновлено:* {updated.strftime('%d/%m/%Y %H:%M')}",
+                parse_mode='Markdown'
+            )
         else:
             await update.message.reply_text(
                 "⚠️ Авто з таким VIN-кодом не знайдено в базі. Зачекайте оновлення менеджером.")
