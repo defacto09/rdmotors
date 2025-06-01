@@ -5,7 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="382ce8e2-ab95-4864-838c-278f72255ab6" name="rdmotors" comment="rdmotors 1.3 (fixes)">
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
     </list>
     <list id="b7791cbd-d990-40e9-a5df-dbb7f2e1d9bf" name="Changes" comment="rdmotors" />
     <option name="SHOW_DIALOG" value="false" />
@@ -490,7 +491,15 @@
       <option name="project" value="LOCAL" />
       <updated>1748787477631</updated>
     </task>
-    <option name="localTasksCounter" value="47" />
+    <task id="LOCAL-00047" summary="rdmotors 1.3 (fixes)">
+      <option name="closed" value="true" />
+      <created>1748787823273</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1748787823273</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <option name="createBranch" value="false" />
     <option name="useBranch" value="true" />
     <option name="searchClosedTasks" value="true" />
