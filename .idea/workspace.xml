@@ -5,9 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="382ce8e2-ab95-4864-838c-278f72255ab6" name="rdmotors" comment="rdmotors 1.2 (fixes)">
-      <change afterPath="$PROJECT_DIR$/available_cars/megane3.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/available_cars/sonata2020.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/available_cars/sonata400.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -478,7 +475,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747572679379</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="rdmotors 1.2 (fixes)">
+      <option name="closed" value="true" />
+      <created>1748786756947</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1748786756947</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <option name="createBranch" value="false" />
     <option name="useBranch" value="true" />
     <option name="searchClosedTasks" value="true" />

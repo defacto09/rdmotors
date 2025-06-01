@@ -193,7 +193,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         if text in keyboard_texts:
             if "де авто" in lowered:
-                await update.message.reply_text("🚗 Щоб дізнатись статус доставки, надайте VIN-код або номер замовлення.")
+                await update.message.reply_text("🚗 Щоб дізнатись статус доставки, надайте VIN-код або номер замовлення.\n\n /додаткові_фото")
             elif "хочу авто зі сша" in lowered:
                 await update.message.reply_text(
                     "❗️Обов'язково ознайомтесь з нашим договором перед заповненням!\n /договір\n\n"
@@ -207,8 +207,8 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                     {"photo": "available_cars/audia4.jpg", "caption": "Audi A4 2017, $24,500"},
                     {"photo": "available_cars/tiguan.jpg", "caption": "Volkswagen Tiguan 2018, $22,700"},
                     {"photo": "available_cars/sonata2020.jpg", "caption": "Hyundai Sonata 2020, $23,500"},
-                    {"photo": "available_cars/sonata400.jpg", "caption": "Hyundai Sonata 2016, $7500$"},
-                    {"photo": "available_cars/megane3.jpg", "caption": "Renault Megane 3"}
+                    {"photo": "available_cars/sonata400.jpg", "caption": "Hyundai Sonata 2016, $7500"},
+                    {"photo": "available_cars/megane3.jpg", "caption": "Renault Megane 3 2013, $7999" }
                 ]
                 for car in cars:
                     try:
@@ -241,6 +241,25 @@ async def agreement(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="Markdown",
         disable_web_page_preview=True
     )
+async def additional_photos(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if len(context.args) < 2:
+        await update.message.reply_text("⚠️ Формат команди: /додаткові_фото <VIN> <номер>")
+        return
+
+    vin = context.args[0].upper()
+    phone_number = context.args[1]
+
+    # Ти можеш сюди додати збереження у базу, або логіку відправки менеджеру, наприклад:
+    user = update.effective_user
+    msg = f"Запит додаткових фото:\nVIN: {vin}\nНомер: {phone_number}\nВід користувача @{user.username} (ID: {user.id})"
+
+    try:
+        # Надіслати повідомлення менеджеру
+        await context.bot.send_message(chat_id=MANAGER_ID, text=msg)
+        await update.message.reply_text("✅ Запит на додаткові фото успішно надіслано. Менеджер зв'яжеться з вами.")
+    except Exception as e:
+        logger.error(f"Помилка при надсиланні запиту менеджеру: {e}")
+        await update.message.reply_text("⚠️ Не вдалося надіслати запит. Спробуйте пізніше.")
 
 # 🧾 Показ останніх повідомлень
 async def get_last_messages(update: Update, context: ContextTypes.DEFAULT_TYPE, limit=10):
@@ -303,6 +322,7 @@ def main():
     app.add_handler(CommandHandler("reply", reply_command))
     app.add_handler(CommandHandler("messages", get_last_messages))
     app.add_handler(CommandHandler("vinstatus", update_vin_status))
+    app.add_handler(CommandHandler("додаткові_фото", additional_photos))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_user_message))
 
     logger.info("Бот запущено.")
