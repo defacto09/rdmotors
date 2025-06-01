@@ -2,3 +2,5 @@
 credentials/
 client_messages.db
 car_status.db
+.DS_Store
+.idea/
