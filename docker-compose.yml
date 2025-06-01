@@ -6,5 +6,10 @@ services:
     env_file:
       - .env
     volumes:
+<<<<<<< HEAD
       - ./database/rdmotors.db:/app/database/rdmotors.db
     command: python main.py
+=======
+      - ./database/rdmotors.db:/app/database/rdmotors.db  # правильне монтування
+    command: python main.py
+>>>>>>> 7c624ce (Збереження локальних змін перед оновленням)
