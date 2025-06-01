@@ -130,7 +130,7 @@ def get_car_status_by_vin(vin):
                 logger.debug(f"Знайдений статус для VIN {vin}: {car_status.status}")
                 return car_status.status, car_status.updated_at
             else:
-                logger.debug(f"Не знайдено статусу для VIN {vin}")
+                logger.debug(f"Не знайдено статусу для VIN {vin}, або ще немає інформації")
 
                 db.commit()
         return None
@@ -196,8 +196,8 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 await update.message.reply_text("🚗 Щоб дізнатись статус доставки, надайте VIN-код або номер замовлення.")
             elif "хочу авто зі сша" in lowered:
                 await update.message.reply_text(
-                    "👋 Щоб розпочати процес доставки авто, заповніть форму: https://forms.gle/BXkuZr9C5qEJHijd7\n\n"
-                    "❗️Обов'язково ознайомтесь з нашим договором перед заповненням! /agreement"
+                    "❗️Обов'язково ознайомтесь з нашим договором перед заповненням!\n /договір\n\n"
+                    "👋 Щоб розпочати процес доставки авто, заповніть форму\n /форма"
                 )
             elif "контакт" in lowered or "телефон" in lowered:
                 await update.message.reply_text("📞 Наш менеджер зв'яжеться з вами. Телефон: +380673951195")
@@ -205,7 +205,10 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 cars = [
                     {"photo": "available_cars/bmwx5.jpg", "caption": "BMW X5 2013, $17,200"},
                     {"photo": "available_cars/audia4.jpg", "caption": "Audi A4 2017, $24,500"},
-                    {"photo": "available_cars/tiguan.jpg", "caption": "Volkswagen Tiguan 2018, $22,700"}
+                    {"photo": "available_cars/tiguan.jpg", "caption": "Volkswagen Tiguan 2018, $22,700"},
+                    {"photo": "available_cars/sonata2020.jpg", "caption": "Hyundai Sonata 2020, $23,500"},
+                    {"photo": "available_cars/sonata400.jpg", "caption": "Hyundai Sonata 2016, $7500$"},
+                    {"photo": "available_cars/megane3.jpg", "caption": "Renault Megane 3"}
                 ]
                 for car in cars:
                     try:
@@ -296,7 +299,7 @@ def main():
         return
     app = Application.builder().token(API_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("agreement", agreement))
+    app.add_handler(CommandHandler("договір", agreement))
     app.add_handler(CommandHandler("reply", reply_command))
     app.add_handler(CommandHandler("messages", get_last_messages))
     app.add_handler(CommandHandler("vinstatus", update_vin_status))
