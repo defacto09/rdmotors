@@ -28,6 +28,7 @@ class CarStatus(Base):
 
     vin = Column(String, primary_key=True)
     status = Column(String)
+    container_number = Column(String)
     updated_at = Column(DateTime)
 
 # Налаштування пулу підключень до SQLite
@@ -95,69 +96,81 @@ async def update_vin_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != MANAGER_ID:
         await update.message.reply_text("❌ У вас немає доступу.")
         return
-    if len(context.args) < 2:
-        await update.message.reply_text("⚠️ Формат: /vinstatus <VIN> <статус>")
+
+    full_text = update.message.text
+    parts = full_text.split(maxsplit=3)
+
+    if len(parts) < 4:
+        await update.message.reply_text("⚠️ Формат: /vinstatus <VIN> <контейнер> <статус>")
         return
 
-    vin = context.args[0].upper()
-    status = " ".join(context.args[1:])
+    vin = parts[1].upper()
+    container = parts[2]
+    status = parts[3]
+
     now = datetime.now()
 
     try:
-        with SessionLocal() as db:  # Отримуємо сесію з пулу
+        with SessionLocal() as db:
             existing_car_status = db.query(CarStatus).filter(CarStatus.vin == vin).first()
 
             if existing_car_status:
                 existing_car_status.status = status
+                existing_car_status.container_number = container
                 existing_car_status.updated_at = now
             else:
-                car_status = CarStatus(vin=vin, status=status, updated_at=now)
+                car_status = CarStatus(
+                    vin=vin,
+                    status=status,
+                    container_number=container,
+                    updated_at=now
+                )
                 db.add(car_status)
 
             db.commit()
-            db.refresh(existing_car_status or car_status)
+            # Оновлення об'єкта після commit не обов'язкове, але можна зробити
+            # db.refresh(existing_car_status or car_status)
 
-        await update.message.reply_text(f"✅ Статус для VIN {vin} оновлено:\n📍 {status}")
+        await update.message.reply_text(
+            f"✅ Статус для VIN {vin} оновлено:\n📦 Контейнер: {container}\n📍 Статус:\n{status}"
+        )
     except Exception as e:
         logger.error(f"Помилка при оновленні car_status: {e}")
         await update.message.reply_text("⚠️ Не вдалося оновити статус.")
 
 def get_car_status_by_vin(vin):
     try:
-        with SessionLocal() as db:  # Отримуємо сесію з пулу
+        with SessionLocal() as db:
             car_status = db.query(CarStatus).filter(CarStatus.vin == vin).first()
             if car_status:
-                logger.debug(f"Знайдений статус для VIN {vin}: {car_status.status}")
-                return car_status.status, car_status.updated_at
+                logger.debug(f"Знайдений статус для VIN {vin}: {car_status.status}, Контейнер: {car_status.container_number}")
+                return car_status.status, car_status.container_number, car_status.updated_at
             else:
-                logger.debug(f"Не знайдено статусу для VIN {vin}")
-
-                db.commit()
+                logger.debug(f"Не знайдено статусу для VIN {vin}, або ще немає інформації")
         return None
     except Exception as e:
         logger.error(f"Помилка при пошуку VIN у car_status.db: {e}")
         return None
+
 
 # 📩 Обробка повідомлень
 async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     user = update.message.from_user
     user_id = user.id
-    username = user.username or "(без username)"
+    name = user.first_name or user.username or "(Без імені)"
 
     # 🔒 Антиспам
     if is_spam(user_id):
         await update.message.reply_text("❗ Ви перевищили ліміт повідомлень. Спробуйте пізніше.")
         return
 
-
     # 🔍 Перевірка, чи це VIN-код
     if len(text) == 17 and text.isalnum():
         result = get_car_status_by_vin(text.upper())
         if result:
-            status, updated = result
+            status, container_number, updated = result
 
-            # Розділяємо статус на крайню й наступну локацію
             parts = status.split("|")
             last_location = parts[0].strip() if len(parts) > 0 else "Невідомо"
             next_location = parts[1].strip() if len(parts) > 1 else "Невідомо"
@@ -165,6 +178,8 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             await update.message.reply_text(
                 f"🚗 *Статус авто*\n"
                 f"🔎 *VIN:* `{text.upper()}`\n"
+                f"🔎 *МОРСЬКА ЛІНІЯ:* `MSC`\n"
+                f"📦 *Контейнер:* {container_number}\n"
                 f"📍 *Крайня локація:* {last_location}\n"
                 f"🧭 *Наступна зупинка:* {next_location}\n"
                 f"🕒 *Оновлено:* {updated.strftime('%d/%m/%Y %H:%M')}",
@@ -181,9 +196,9 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     ]
 
     if user_id != MANAGER_ID:
-        save_message_to_db(user_id, username, text)
+        save_message_to_db(user_id, name, text)
 
-        msg = f"✉️ Повідомлення від @{username} (ID: {user_id}):\n{text}"
+        msg = f"✉️ Повідомлення від @{name} (ID: {user_id}):\n{text}"
         try:
             await context.bot.send_message(chat_id=MANAGER_ID, text=msg)
         except Exception as e:
@@ -196,8 +211,10 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 await update.message.reply_text("🚗 Щоб дізнатись статус доставки, надайте VIN-код або номер замовлення.")
             elif "хочу авто зі сша" in lowered:
                 await update.message.reply_text(
-                    "👋 Щоб розпочати процес доставки авто, заповніть форму: https://forms.gle/BXkuZr9C5qEJHijd7\n\n"
-                    "❗️Обов'язково ознайомтесь з нашим договором перед заповненням! /agreement"
+                    "❗️Обов'язково ознайомтесь з нашим договором перед заповненням!\n\n"
+                    "👋 Щоб розпочати процес доставки авто, заповніть форму\n\n"
+                    "/dogovir\n\n"
+                    "/forma"
                 )
             elif "контакт" in lowered or "телефон" in lowered:
                 await update.message.reply_text("📞 Наш менеджер зв'яжеться з вами. Телефон: +380673951195")
@@ -205,7 +222,9 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 cars = [
                     {"photo": "available_cars/bmwx5.jpg", "caption": "BMW X5 2013, $17,200"},
                     {"photo": "available_cars/audia4.jpg", "caption": "Audi A4 2017, $24,500"},
-                    {"photo": "available_cars/tiguan.jpg", "caption": "Volkswagen Tiguan 2018, $22,700"}
+                    {"photo": "available_cars/tiguan.jpg", "caption": "Volkswagen Tiguan 2018, $22,700"},
+                    {"photo": "available_cars/sonata2020.jpg", "caption": "Hyundai Sonata 2020, $24,000"},
+                    {"photo": "available_cars/sonata400.jpg", "caption": "Hyundai Sonata 2016, $7,500"}
                 ]
                 for car in cars:
                     try:
@@ -231,7 +250,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         pass  # менеджер нічого не робить тут
 
 # 📄 Відправка договору
-async def agreement(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def dogovir(update: Update, context: ContextTypes.DEFAULT_TYPE):
     link = "https://docs.google.com/document/d/1VSmsVevCBc0BCSVnsJgdkwlZRWDY_hhjIbcnzPpsOVg/edit?usp=sharing/view"
     await update.message.reply_text(
         f"📄 Ось наш договір:\n\n[Посилання]({link})",
@@ -250,7 +269,7 @@ async def get_last_messages(update: Update, context: ContextTypes.DEFAULT_TYPE, 
 
         text = "🗂 Останні 10 повідомлень:\n\n"
         for m in messages:
-            text += f"🕒 {m.timestamp}\n👤 @{m.username} (ID: {m.user_id})\n💬 {m.message}\n\n"
+            text += f"🕒 {m.timestamp}\n👤 @{m.name} (ID: {m.user_id})\n💬 {m.message}\n\n"
 
         await update.message.reply_text(text[:4096])
     except Exception as e:
@@ -282,6 +301,14 @@ def get_main_keyboard():
         ["📋 В наявності"]
     ], resize_keyboard=True)
 
+async def forma(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    link = "https://forms.gle/BXkuZr9C5qEJHijd7"
+    await update.message.reply_text(
+        f"📄 Ось наша форма:\n\n[Посилання]({link})",
+    parse_mode = "Markdown",
+    disable_web_page_preview = True
+    )
+
 # ▶️ Команда старту
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -296,10 +323,11 @@ def main():
         return
     app = Application.builder().token(API_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("agreement", agreement))
+    app.add_handler(CommandHandler("dogovir", dogovir))
     app.add_handler(CommandHandler("reply", reply_command))
     app.add_handler(CommandHandler("messages", get_last_messages))
     app.add_handler(CommandHandler("vinstatus", update_vin_status))
+    app.add_handler(CommandHandler("forma", forma))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_user_message))
 
     logger.info("Бот запущено.")
