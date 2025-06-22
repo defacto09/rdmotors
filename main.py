@@ -101,7 +101,7 @@ async def update_vin_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     parts = full_text.split(maxsplit=3)
 
     if len(parts) < 4:
-        await update.message.reply_text("⚠️ Формат: /vinstatus <VIN> <контейнер> <статус>")
+        await update.message.reply_text("⚠️ Формат: /vinstatus <VIN> <container> <статус>")
         return
 
     vin = parts[1].upper()
