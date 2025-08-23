@@ -221,8 +221,6 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             elif "в наявності" in lowered or "які авто" in lowered:
                 cars = [
                     {"photo": "available_cars/bmwx5.jpg", "caption": "BMW X5 2013, $17,200"},
-                    {"photo": "available_cars/audia4.jpg", "caption": "Audi A4 2017, $24,500"},
-                    {"photo": "available_cars/tiguan.jpg", "caption": "Volkswagen Tiguan 2018, $22,700"},
                     {"photo": "available_cars/sonata2020.jpg", "caption": "Hyundai Sonata 2020, $24,000"},
                     {"photo": "available_cars/sonata400.jpg", "caption": "Hyundai Sonata 2016, $7,500"}
                 ]
