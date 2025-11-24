@@ -1,4 +1,3 @@
-import os
 import logging
 import shutil
 import pathlib
@@ -369,9 +368,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             await update.message.reply_text("📞 Наш менеджер зв'яжеться з вами. Телефон: +380673951195")
         elif "в наявності" in lowered or "які авто" in lowered or "📋" in text:
             cars = [
-                {"photo": "available_cars/bmwx5.jpg", "caption": "BMW X5 2013, $17,200"},
-                {"photo": "available_cars/sonata2021.jpg", "caption": "Hyundai Sonata 2021, $24,000"},
-                {"photo": "available_cars/sonata2016.jpg", "caption": "Hyundai Sonata 2016, $7,500"}
+                {"photo": "available_cars/sonata2021.jpg", "caption": "Hyundai Sonata 2021, $24,000"}
             ]
             for car in cars:
                 try:
@@ -417,7 +414,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             await update.message.reply_text("📞 Наш менеджер зв'яжеться з вами. Телефон: +380673951195")
         elif "в наявності" in lowered or "які авто" in lowered:
             cars = [
-                {"photo": "available_cars/sonata2021.jpg", "caption": "Hyundai Sonata 2021, $22,000"}
+                {"photo": "available_cars/sonata2021.jpg", "caption": "Hyundai Sonata 2021, $24,000"}
             ]
         elif "faq" in lowered or "❓" in text:
             link = "https://docs.google.com/document/d/1VSmsVevCBc0BCSVnsJgdkwlZRWDY_hhjIbcnzPpsOVg/edit?usp=sharing"
@@ -480,3 +477,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
