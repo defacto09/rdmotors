@@ -246,14 +246,18 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     if len(text) == 17 and text.isalnum():
         result = get_car_status_by_vin(text.upper())
         if result:
+            # ТЕПЕР result — dict, а не tuple!
             await update.message.reply_text(
-                f"🚗 Статус авто\n"
-                f"VIN: {result['vin']}\n"
-                f"Контейнер: {result.get('container_number', 'Невідомо')}\n"
-                f"Марка: {result.get('mark', 'Невідомо')}\n"
-                f"Модель: {result.get('model', 'Невідомо')}\n"
-                f"Поточна локація: {result.get('loc_now_id', 'Невідомо')}\n"
-                f"Наступна зупинка: {result.get('loc_next_id', 'Невідомо')}\n"
+                f"🚗 *Статус авто*\n"
+                f"🔎 *VIN:* `{result.get('vin', text.upper())}`\n"
+                f"📦 *Контейнер:* {result.get('container_number', '')}\n"
+                f"🚘 *Марка:* {result.get('mark', '')}\n"
+                f"🚘 *Модель:* {result.get('model', '')}\n"
+                f"📍 *Поточна локація:* {result.get('loc_now', '')}\n"
+                f"🧭 *Наступна зупинка:* {result.get('loc_next', '')}\n"
+                f"🕒 Прибуття: {result.get('arrival_date', '')}\n"
+                f"🕒 Відправлення: {result.get('departure_date', '')}",
+                parse_mode='Markdown'
             )
         else:
             await update.message.reply_text(
