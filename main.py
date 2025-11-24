@@ -6,7 +6,7 @@ from functools import wraps
 from datetime import datetime, timedelta
 from collections import defaultdict
 from urllib.parse import quote_plus
-
+import requests
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
@@ -135,24 +135,29 @@ def save_message_to_db(user_id, username, message_text):
     finally:
         db.close()
 
+def get_car_status_from_api(vin):
+    url = f"https://rdmotors.com.ua/autousa/vin/{vin}"
+    headers = {"Authorization": "Bearer Qndr1@n4zr0m4n"}
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()  # Dict with all fields
+    return None
 
+# ФУНКЦІЯ ТЕЛЕГРАМ-БОТА
 def get_car_status_by_vin(vin):
-    """Get car status from MySQL by VIN"""
-    db = SessionLocal()
+    """Get car status from backend API by VIN"""
     try:
-        car_status = db.query(CarStatus).filter(CarStatus.vin == vin).first()
-        if car_status:
+        car_info = get_car_status_from_api(vin)
+        if car_info:
             logger.debug(f"✅ Знайшли статус для цього VIN {vin}")
-            return car_status.status, car_status.container_number, car_status.updated_at
+            # Можна повертати деталі або сформувати відповідь для користувача:
+            return car_info
         else:
             logger.debug(f"⚠️ Нічого не знайдено за вашим запитом {vin}")
         return None
     except Exception as e:
         logger.error(f"❌ Error querying car status: {e}")
         return None
-    finally:
-        db.close()
-
 
 def save_bot_user(user_id, username, first_name, is_manager=0):
     """Save or update bot user"""
@@ -176,6 +181,7 @@ def save_bot_user(user_id, username, first_name, is_manager=0):
         db.rollback()
     finally:
         db.close()
+
 
 # ============================================================================
 # MESSAGE HANDLER
