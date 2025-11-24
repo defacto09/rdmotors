@@ -137,7 +137,7 @@ def save_message_to_db(user_id, username, message_text):
 
 def get_car_status_from_api(vin):
     url = f"https://rdmotors.com.ua/autousa/vin/{vin}"
-    headers = {"Authorization": "Bearer <Qndr1@n4zr0m4n>"}
+    headers = {"Authorization": "Bearer Qndr1@n4zr0m4n"}
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         return response.json()  # Dict with all fields
