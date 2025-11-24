@@ -322,9 +322,6 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("dogovir", dogovir))
     app.add_handler(CommandHandler("forma", forma))
-    app.add_handler(CommandHandler("vinstatus", update_vin_status))
-    app.add_handler(CommandHandler("messages", get_last_messages))
-    app.add_handler(CommandHandler("reply", reply_command))
 
     # Messages
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_user_message))
