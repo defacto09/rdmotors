@@ -177,21 +177,23 @@ def save_bot_user(user_id, username, first_name, is_manager=0):
     finally:
         db.close()
 
-
 # ============================================================================
-# COMMAND HANDLERS
+# MESSAGE HANDLER
 # ============================================================================
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Start command - show main keyboard"""
     user = update.message.from_user
     save_bot_user(user.id, user.username or "unknown", user.first_name or "User")
-
     await update.message.reply_text(
         "👋 Привіт! Вас вітає підтримка RDMOTORS. Оберіть дію або напишіть повідомлення.",
         reply_markup=get_main_keyboard()
     )
-
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.message.from_user
+    save_bot_user(user.id, user.username or "unknown", user.first_name or "User")
+    await update.message.reply_text(
+        "👋 Привіт! Вас вітає підтримка RDMOTORS. Оберіть дію або напишіть повідомлення.",
+        reply_markup=get_main_keyboard()
+    )
 
 async def dogovir(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send agreement link"""
@@ -202,7 +204,6 @@ async def dogovir(update: Update, context: ContextTypes.DEFAULT_TYPE):
         disable_web_page_preview=True
     )
 
-
 async def forma(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send form link"""
     link = "https://forms.gle/BXkuZr9C5qEJHijd7"
@@ -212,7 +213,6 @@ async def forma(update: Update, context: ContextTypes.DEFAULT_TYPE):
         disable_web_page_preview=True
     )
 
-
 async def update_vin_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Manager command: Update car status by VIN"""
     if update.effective_user.id != MANAGER_ID:
@@ -221,7 +221,6 @@ async def update_vin_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     full_text = update.message.text
     parts = full_text.split(maxsplit=3)
-
     if len(parts) < 4:
         await update.message.reply_text("⚠️ Format: /vinstatus <VIN> <container> <status>")
         return
@@ -234,7 +233,6 @@ async def update_vin_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = SessionLocal()
     try:
         existing = db.query(CarStatus).filter(CarStatus.vin == vin).first()
-
         if existing:
             existing.status = status
             existing.container_number = container
@@ -260,7 +258,6 @@ async def update_vin_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     finally:
         db.close()
 
-
 async def get_last_messages(update: Update, context: ContextTypes.DEFAULT_TYPE, limit=10):
     """Manager command: View last messages"""
     if update.effective_user.id != MANAGER_ID:
@@ -270,7 +267,6 @@ async def get_last_messages(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     db = SessionLocal()
     try:
         messages = db.query(Message).order_by(Message.id.desc()).limit(limit).all()
-
         if not messages:
             await update.message.reply_text("⚠️ No messages yet.")
             return
@@ -281,11 +277,10 @@ async def get_last_messages(update: Update, context: ContextTypes.DEFAULT_TYPE, 
 
         await update.message.reply_text(text[:4096])
     except Exception as e:
-        logger.error(f"❌ Erro querying messages: {e}")
+        logger.error(f"❌ Error querying messages: {e}")
         await update.message.reply_text("⚠️ Failed to retrieve messages.")
     finally:
         db.close()
-
 
 async def reply_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Manager command: Reply to user"""
@@ -310,10 +305,6 @@ async def reply_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"❌ Error: {e}")
         await update.message.reply_text(f"⚠️ Failed to send: {e}")
 
-
-# ============================================================================
-# MESSAGE HANDLER
-# ============================================================================
 async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     user = update.message.from_user
@@ -333,7 +324,6 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             parts = status.split("|")
             last_location = parts[0].strip() if len(parts) > 0 and parts[0].strip() else "Невідомо"
             next_location = parts[1].strip() if len(parts) > 1 and parts[1].strip() else "Невідомо"
-
             await update.message.reply_text(
                 f"🚗 *Статус авто*\n"
                 f"🔎 *VIN:* `{text.upper()}`\n"
@@ -357,7 +347,9 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     lowered = text.lower()
     if text in keyboard_texts:
         if "де авто" in lowered:
-            await update.message.reply_text("🚗 Щоб дізнатись статус доставки, надайте VIN-код або номер замовлення.")
+            await update.message.reply_text(
+                "🚗 Щоб дізнатись статус доставки, надайте VIN-код або номер замовлення."
+            )
         elif "хочу авто зі сша" in lowered:
             await update.message.reply_text(
                 "❗Обов'язково ознайомтесь з нашим договором перед заповненням!\n\n"
@@ -369,9 +361,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             await update.message.reply_text("📞 Наш менеджер зв'яжеться з вами. Телефон: +380673951195")
         elif "в наявності" in lowered or "які авто" in lowered or "📋" in text:
             cars = [
-                {"photo": "available_cars/bmwx5.jpg", "caption": "BMW X5 2013, $17,200"},
-                {"photo": "available_cars/sonata2021.jpg", "caption": "Hyundai Sonata 2021, $24,000"},
-                {"photo": "available_cars/sonata2016.jpg", "caption": "Hyundai Sonata 2016, $7,500"}
+                {"photo": "available_cars/sonata2021.jpg", "caption": "Hyundai Sonata 2021, $24,000"}
             ]
             for car in cars:
                 try:
@@ -391,48 +381,16 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 parse_mode="Markdown",
                 disable_web_page_preview=True
             )
-    else:
-        save_message_to_db(user_id, username, text)
-        msg = f"✉️ Повідомлення від @{username} (ID: {user_id}):\n{text}"
-        try:
-            await context.bot.send_message(chat_id=MANAGER_ID, text=msg)
-        except Exception as e:
-            logger.error(f"❌ Failed to forward to manager: {e}")
+        return
 
-        # Respond to keyboard options
-        lowered = text.lower()
-
-        if "де авто" in lowered or "🚗 Де авто?" in text:
-            await update.message.reply_text(
-                "🚗 Щоб дізнатись статус доставки, надайте VIN-код або номер замовлення."
-            )
-        elif "хочу авто" in lowered or "📥" in text:
-            await update.message.reply_text(
-                "❗Обов'язково ознайомтесь з нашим договором перед заповненням!\n\n"
-                "👋 Щоб розпочати процес доставки авто, заповніть форму\n\n"
-                "/dogovir\n\n"
-                "/forma"
-            )
-        elif "контакт" in lowered or "телефон" in lowered or "📞" in text:
-            await update.message.reply_text("📞 Наш менеджер зв'яжеться з вами. Телефон: +380673951195")
-        elif "в наявності" in lowered or "які авто" in lowered:
-            cars = [
-                {"photo": "available_cars/sonata2021.jpg", "caption": "Hyundai Sonata 2021, $24,000"}
-            ]
-        elif "faq" in lowered or "❓" in text:
-            link = "https://docs.google.com/document/d/1VSmsVevCBc0BCSVnsJgdkwlZRWDY_hhjIbcnzPpsOVg/edit?usp=sharing"
-            await update.message.reply_text(
-                f"🚙 Натиснувши *'📥 Хочу авто зі США'* ви зможете розпочати процес покупки авто.\n\n"
-                f"❓ Щоб дізнатись статус замовлення, натисніть *'🚗 Де авто?'*.\n\n"
-                f"💵 Всі ціни залежать від багатьох факторів, щоб більше дізнатись про це, перегляньте наш [договір]({link}).\n\n"
-                f"☎️ Якщо ви хочете термінову відповідь по вашому запиті, то можете звернутись за контактом у *📞 Контакт*\n\n"
-                f"🚘 Бажаєте дізнатись про наявні авто RDMOTORS у продажі? Знайдете відповідь у *'📋 В наявності'*\n\n"
-                f"_За інакшими питаннями пишіть в чат, менеджер зв'яжеться з вами_",
-                parse_mode="Markdown",
-                disable_web_page_preview=True
-            )
-        else:
-            await update.message.reply_text("✅ Ваше повідомлення надіслано менеджеру.")
+    # --- Якщо не спрацював жоден сценарій меню ---
+    save_message_to_db(user_id, username, text)
+    msg = f"✉️ Повідомлення від @{username} (ID: {user_id}):\n{text}"
+    try:
+        await context.bot.send_message(chat_id=MANAGER_ID, text=msg)
+    except Exception as e:
+        logger.error(f"Не вдалося переслати менеджеру: {e}")
+    await update.message.reply_text("✅ Ваше повідомлення надіслано менеджеру.")
 
 # ============================================================================
 # KEYBOARD LAYOUT
