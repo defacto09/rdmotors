@@ -202,6 +202,8 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         "📋 В наявності", "🚗 Де авто?"
     ]
     lowered = text.lower()
+
+    # СПОЧАТКУ меню
     if text in keyboard_texts:
         if "де авто" in lowered:
             await update.message.reply_text(
@@ -240,23 +242,26 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             )
         return
 
-    # Лише якщо це НЕ команда-кнопка — тоді вже перевіряємо на VIN!!
-    result = get_car_status_by_vin(text.upper())
-    if result:
-        await update.message.reply_text(
-            f"🚗 Статус авто\n"
-            f"VIN: {result['vin']}\n"
-            f"Контейнер: {result.get('container_number', 'Невідомо')}\n"
-            f"Марка: {result.get('mark', 'Невідомо')}\n"
-            f"Модель: {result.get('model', 'Невідомо')}\n"
-            f"Поточна локація: {result.get('loc_now_id', 'Невідомо')}\n"
-            f"Наступна зупинка: {result.get('loc_next_id', 'Невідомо')}\n"
-        )
+    # Тільки якщо це НЕ меню — далі пробуємо VIN-код
+    if len(text) == 17 and text.isalnum():
+        result = get_car_status_by_vin(text.upper())
+        if result:
+            await update.message.reply_text(
+                f"🚗 Статус авто\n"
+                f"VIN: {result['vin']}\n"
+                f"Контейнер: {result.get('container_number', 'Невідомо')}\n"
+                f"Марка: {result.get('mark', 'Невідомо')}\n"
+                f"Модель: {result.get('model', 'Невідомо')}\n"
+                f"Поточна локація: {result.get('loc_now_id', 'Невідомо')}\n"
+                f"Наступна зупинка: {result.get('loc_next_id', 'Невідомо')}\n"
+            )
+        else:
+            await update.message.reply_text(
+                "⚠️ Авто з таким VIN-кодом не знайдено в базі."
+            )
         return
-    else:
-        await update.message.reply_text("⚠️ Авто з таким VIN-кодом не знайдено в базі.")
 
-    # --- Якщо не VIN і не команда меню ---
+    # Якщо це не меню і не VIN — повідомлення для менеджера
     save_message_to_db(user_id, username, text)
     msg = f"✉️ Повідомлення від @{username} (ID: {user_id}):\n{text}"
     try:
