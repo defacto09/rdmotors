@@ -260,6 +260,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     if len(text) == 17 and text.isalnum():
         result = get_car_status_by_vin(text.upper())
         if result:
+            now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
             # ТЕПЕР result — dict, а не tuple!
             await update.message.reply_text(
                 f"🚗 *Статус авто*\n"
@@ -271,7 +272,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 f"🧭 *Наступна зупинка:* {result.get('loc_next', '')}\n"
                 f"🕒 Прибуття: {result.get('arrival_date', '')}\n"
                 f"🕒 Відправлення: {result.get('departure_date', '')}",
-    f"⏰ *Актуально на:* {datetime.now()}",
+    f"⏰ *Актуально на:* {now}",
                 parse_mode='Markdown'
             )
         else:
