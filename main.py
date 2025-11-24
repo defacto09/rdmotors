@@ -309,12 +309,8 @@ def get_main_keyboard():
 
 def main():
     """Start the bot"""
-    if not API_TOKEN:
-        logger.error("❌ TELEGRAM_API_TOKEN not set in .env")
-        return
-
-    if not MANAGER_ID:
-        logger.error("❌ MANAGER_ID not set in .env")
+    if not API_TOKEN or not MANAGER_ID:
+        logger.error("❌ TELEGRAM_API_TOKEN or MANAGER_ID not set in .env")
         return
 
     app = Application.builder().token(API_TOKEN).build()
@@ -323,8 +319,11 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("dogovir", dogovir))
     app.add_handler(CommandHandler("forma", forma))
+#    app.add_handler(CommandHandler("vinstatus", update_vin_status))
+#    app.add_handler(CommandHandler("messages", get_last_messages))
+#    app.add_handler(CommandHandler("reply", reply_command))
 
-    # Messages
+    # Messages (MUST BE LAST)
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_user_message))
 
     logger.info("🚀 Bot started successfully!")
