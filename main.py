@@ -1,4 +1,3 @@
-import os
 import logging
 import shutil
 import pathlib
@@ -182,6 +181,7 @@ def save_bot_user(user_id, username, first_name, is_manager=0):
     finally:
         db.close()
 
+<<<<<<< HEAD
 
 # ============================================================================
 # MESSAGE HANDLER
@@ -304,46 +304,16 @@ async def reply_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"❌ Error: {e}")
         await update.message.reply_text(f"⚠️ Failed to send: {e}")
 
-async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text
-    user = update.message.from_user
-    user_id = user.id
-    username = user.username or user.first_name or "(No name)"
-
-    save_bot_user(user_id, user.username, user.first_name)
-
-    if is_spam(user_id):
-        await update.message.reply_text("❗ Ви перевищили ліміт повідомлень. Спробуйте пізніше.")
-        return
-
-    if len(text) == 17 and text.isalnum():
-        result = get_car_status_by_vin(text.upper())
-        if result:
-            status, container_number, updated = result
-            parts = status.split("|")
-            last_location = parts[0].strip() if len(parts) > 0 and parts[0].strip() else "Невідомо"
-            next_location = parts[1].strip() if len(parts) > 1 and parts[1].strip() else "Невідомо"
-            await update.message.reply_text(
-                f"🚗 *Статус авто*\n"
-                f"🔎 *VIN:* `{text.upper()}`\n"
-                f"🔎 *МОРСЬКА ЛІНІЯ:* `MSC`\n"
-                f"📦 *Контейнер:* {container_number}\n"
-                f"📍 *Крайня локація:* {last_location}\n"
-                f"🧭 *Наступна зупинка:* {next_location}\n"
-                f"🕒 Актуально на: {updated.strftime('%d.%m.%Y %H:%M')}",
-                parse_mode='Markdown'
-            )
-        else:
-            await update.message.reply_text(
-                "⚠️ Авто з таким VIN-кодом не знайдено в базі. Зачекайте оновлення менеджером."
-            )
-        return
+# ============================================================================
+# MESSAGE HANDLER
 
     keyboard_texts = [
         "📥 Хочу авто зі США", "❓FAQ", "📞 Контакт",
         "📋 В наявності", "🚗 Де авто?"
     ]
     lowered = text.lower()
+
+    # СПОЧАТКУ меню
     if text in keyboard_texts:
         if "де авто" in lowered:
             await update.message.reply_text(
@@ -382,7 +352,30 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             )
         return
 
-    # --- Якщо не спрацював жоден сценарій меню ---
+    # Тільки якщо це НЕ меню — далі пробуємо VIN-код
+    if len(text) == 17 and text.isalnum():
+        result = get_car_status_by_vin(text.upper())
+        if result:
+            # ТЕПЕР result — dict, а не tuple!
+            await update.message.reply_text(
+                f"🚗 *Статус авто*\n"
+                f"🔎 *VIN:* `{result.get('vin', text.upper())}`\n"
+                f"📦 *Контейнер:* {result.get('container_number', '')}\n"
+                f"🚘 *Марка:* {result.get('mark', '')}\n"
+                f"🚘 *Модель:* {result.get('model', '')}\n"
+                f"📍 *Поточна локація:* {result.get('loc_now', '')}\n"
+                f"🧭 *Наступна зупинка:* {result.get('loc_next', '')}\n"
+                f"🕒 Прибуття: {result.get('arrival_date', '')}\n"
+                f"🕒 Відправлення: {result.get('departure_date', '')}",
+                parse_mode='Markdown'
+            )
+        else:
+            await update.message.reply_text(
+                "⚠️ Авто з таким VIN-кодом не знайдено в базі."
+            )
+        return
+
+    # Якщо це не меню і не VIN — повідомлення для менеджера
     save_message_to_db(user_id, username, text)
     msg = f"✉️ Повідомлення від @{username} (ID: {user_id}):\n{text}"
     try:
@@ -437,3 +430,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
