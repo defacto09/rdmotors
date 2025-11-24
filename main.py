@@ -314,30 +314,25 @@ async def reply_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ============================================================================
 # MESSAGE HANDLER
 # ============================================================================
-
 async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle text messages from users"""
     text = update.message.text
     user = update.message.from_user
     user_id = user.id
     username = user.username or user.first_name or "(No name)"
 
-    # Save user to DB
     save_bot_user(user_id, user.username, user.first_name)
 
-    # Anti-spam check
     if is_spam(user_id):
-        await update.message.reply_text("❗ You've sent too many messages. Try again later.")
+        await update.message.reply_text("❗ Ви перевищили ліміт повідомлень. Спробуйте пізніше.")
         return
 
-    # Check if it's a VIN code (17 alphanumeric chars)
     if len(text) == 17 and text.isalnum():
         result = get_car_status_by_vin(text.upper())
         if result:
             status, container_number, updated = result
             parts = status.split("|")
-            last_location = parts[0].strip() if len(parts) > 0 else "Невідомо"
-            next_location = parts[1].strip() if len(parts) > 1 else "Невідомо"
+            last_location = parts[0].strip() if len(parts) > 0 and parts[0].strip() else "Невідомо"
+            next_location = parts[1].strip() if len(parts) > 1 and parts[1].strip() else "Невідомо"
 
             await update.message.reply_text(
                 f"🚗 *Статус авто*\n"
@@ -346,7 +341,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 f"📦 *Контейнер:* {container_number}\n"
                 f"📍 *Крайня локація:* {last_location}\n"
                 f"🧭 *Наступна зупинка:* {next_location}\n"
-                f"🕒 Актуально на: {datetime.now().strftime('%d.%m.%Y %H:%M')}",
+                f"🕒 Актуально на: {updated.strftime('%d.%m.%Y %H:%M')}",
                 parse_mode='Markdown'
             )
         else:
@@ -355,61 +350,55 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             )
         return
 
-    # Keyboard options
     keyboard_texts = [
         "📥 Хочу авто зі США", "❓FAQ", "📞 Контакт",
         "📋 В наявності", "🚗 Де авто?"
     ]
-
-    # Handle manager messages
-    if user_id == MANAGER_ID:
-        pass  # Manager doesn't send messages to themselves
-    else:
-        # Save message for manager
-        save_message_to_db(user_id, username, text)
-
-        # Forward to manager
-        msg = f"✉️ Message from @{username} (ID: {user_id}):\n{text}"
-        try:
-            await context.bot.send_message(chat_id=MANAGER_ID, text=msg)
-        except Exception as e:
-            logger.error(f"❌ Failed to forward to manager: {e}")
-
-        # Respond to keyboard options
-        lowered = text.lower()
-
-        if "де авто" in lowered or "🚗 Де авто?" in text:
-            await update.message.reply_text(
-                "🚗 Щоб дізнатись статус доставки, надайте VIN-код або номер замовлення."
-            )
-        elif "хочу авто" in lowered or "📥" in text:
+    lowered = text.lower()
+    if text in keyboard_texts:
+        if "де авто" in lowered:
+            await update.message.reply_text("🚗 Щоб дізнатись статус доставки, надайте VIN-код або номер замовлення.")
+        elif "хочу авто зі сша" in lowered:
             await update.message.reply_text(
                 "❗Обов'язково ознайомтесь з нашим договором перед заповненням!\n\n"
                 "👋 Щоб розпочати процес доставки авто, заповніть форму\n\n"
                 "/dogovir\n\n"
                 "/forma"
             )
-        elif "контакт" in lowered or "телефон" in lowered or "📞" in text:
+        elif "контакт" in lowered or "телефон" in lowered:
             await update.message.reply_text("📞 Наш менеджер зв'яжеться з вами. Телефон: +380673951195")
-        elif "в наявності" in lowered or "які авто" in lowered:
+        elif "в наявності" in lowered or "які авто" in lowered or "📋" in text:
             cars = [
-                {"photo": "available_cars/sonata2021.jpg", "caption": "Hyundai Sonata 2021, $24,000"}
+                {"photo": "available_cars/bmwx5.jpg", "caption": "BMW X5 2013, $17,200"},
+                {"photo": "available_cars/sonata2021.jpg", "caption": "Hyundai Sonata 2021, $24,000"},
+                {"photo": "available_cars/sonata2016.jpg", "caption": "Hyundai Sonata 2016, $7,500"}
             ]
-        elif "faq" in lowered or "❓" in text:
+            for car in cars:
+                try:
+                    with open(car["photo"], "rb") as photo_file:
+                        await update.message.reply_photo(photo=photo_file, caption=car["caption"])
+                except Exception as e:
+                    logger.error(f"Не вдалося надіслати фото {car['photo']}: {e}")
+        elif "faq" in lowered or "питання" in lowered or "❓" in text:
             link = "https://docs.google.com/document/d/1VSmsVevCBc0BCSVnsJgdkwlZRWDY_hhjIbcnzPpsOVg/edit?usp=sharing"
             await update.message.reply_text(
                 f"🚙 Натиснувши *'📥 Хочу авто зі США'* ви зможете розпочати процес покупки авто.\n\n"
                 f"❓ Щоб дізнатись статус замовлення, натисніть *'🚗 Де авто?'*.\n\n"
-                f"💵 Всі ціни залежать від багатьох факторів, щоб більше дізнатись про це, перегляньте наш [договір]({link}).\n\n"
-                f"☎️ Якщо ви хочете термінову відповідь по вашому запиті, то можете звернутись за контактом у *📞 Контакт*\n\n"
-                f"🚘 Бажаєте дізнатись про наявні авто RDMOTORS у продажі? Знайдете відповідь у *'📋 В наявності'*\n\n"
-                f"_За інакшими питаннями пишіть в чат, менеджер зв'яжеться з вами_",
+                f"💵 Всі ціни залежать від багатьох факторів, а щоб більше дізнатися про це, перегляньте наш [договір]({link}).\n\n"
+                f"☎️ Якщо вам потрібна термінова відповідь по запиту, зверніться за контактом у *📞 Контакт*.\n\n"
+                f"🚘 Щоб дізнатись про наявні авто RDMOTORS у продажі — дивіться *'📋 В наявності'*.\n\n"
+                f"_Якщо виникли питання — пишіть у чат, менеджер зв'яжеться з вами._",
                 parse_mode="Markdown",
                 disable_web_page_preview=True
             )
-        else:
-            await update.message.reply_text("✅ Ваше повідомлення надіслано менеджеру.")
-
+    else:
+        save_message_to_db(user_id, username, text)
+        msg = f"✉️ Повідомлення від @{username} (ID: {user_id}):\n{text}"
+        try:
+            await context.bot.send_message(chat_id=MANAGER_ID, text=msg)
+        except Exception as e:
+            logger.error(f"Не вдалося переслати менеджеру: {e}")
+        await update.message.reply_text("✅ Ваше повідомлення надіслано менеджеру.")
 
 # ============================================================================
 # KEYBOARD LAYOUT
