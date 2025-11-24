@@ -271,6 +271,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 f"🧭 *Наступна зупинка:* {result.get('loc_next', '')}\n"
                 f"🕒 Прибуття: {result.get('arrival_date', '')}\n"
                 f"🕒 Відправлення: {result.get('departure_date', '')}",
+    f"⏰ *Актуально на:* {now}",
                 parse_mode='Markdown'
             )
         else:
