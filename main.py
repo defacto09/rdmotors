@@ -1,3 +1,4 @@
+import os
 import logging
 import shutil
 import pathlib
@@ -177,7 +178,7 @@ def save_bot_user(user_id, username, first_name, is_manager=0):
             db.add(bot_user)
         db.commit()
     except Exception as e:
-        logger.error(f"❌ Erro saving bot user: {e}")
+        logger.error(f"❌ Error saving bot user: {e}")
         db.rollback()
     finally:
         db.close()
@@ -185,6 +186,19 @@ def save_bot_user(user_id, username, first_name, is_manager=0):
 # ============================================================================
 # MESSAGE HANDLER
 # ============================================================================
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.message.from_user
+    save_bot_user(user.id, user.username or "unknown", user.first_name or "User")
+    await update.message.reply_text("👋 Привіт! Вас вітає підтримка RDMOTORS. Оберіть дію або напишіть повідомлення.", reply_markup=get_main_keyboard())
+
+async def dogovir(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    link = "https://docs.google.com/document/d/1VSmsVevCBc0BCSVnsJgdkwlZRWDY_hhjIbcnzPpsOVg/edit?usp=sharing"
+    await update.message.reply_text(f"📄 Ось наш договір:\n\n[Link]({link})", parse_mode="Markdown", disable_web_page_preview=True)
+
+async def forma(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    link = "https://forms.gle/BXkuZr9C5qEJHijd7"
+    await update.message.reply_text(f"📄 Ось наша форма:\n\n[Link]({link})", parse_mode="Markdown", disable_web_page_preview=True)
+
 async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     user = update.message.from_user
