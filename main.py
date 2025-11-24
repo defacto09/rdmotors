@@ -187,13 +187,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "👋 Привіт! Вас вітає підтримка RDMOTORS. Оберіть дію або напишіть повідомлення.",
         reply_markup=get_main_keyboard()
     )
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.message.from_user
-    save_bot_user(user.id, user.username or "unknown", user.first_name or "User")
-    await update.message.reply_text(
-        "👋 Привіт! Вас вітає підтримка RDMOTORS. Оберіть дію або напишіть повідомлення.",
-        reply_markup=get_main_keyboard()
-    )
 
 async def dogovir(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send agreement link"""
