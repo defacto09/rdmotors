@@ -281,7 +281,7 @@ async def get_last_messages(update: Update, context: ContextTypes.DEFAULT_TYPE, 
 
         await update.message.reply_text(text[:4096])
     except Exception as e:
-        logger.error(f"❌ Error querying messages: {e}")
+        logger.error(f"❌ Erro querying messages: {e}")
         await update.message.reply_text("⚠️ Failed to retrieve messages.")
     finally:
         db.close()
