@@ -177,7 +177,7 @@ def save_bot_user(user_id, username, first_name, is_manager=0):
             db.add(bot_user)
         db.commit()
     except Exception as e:
-        logger.error(f"❌ Error saving bot user: {e}")
+        logger.error(f"❌ Erro saving bot user: {e}")
         db.rollback()
     finally:
         db.close()
