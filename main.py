@@ -393,7 +393,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             await update.message.reply_text("📞 Наш менеджер зв'яжеться з вами. Телефон: +380673951195")
         elif "в наявності" in lowered or "які авто" in lowered:
             cars = [
-                {"photo": "available_cars/sonata2021.jpg", "caption": "Hyundai Sonata 2021, $24,000"}
+                {"photo": "available_cars/sonata2021.jpg", "caption": "Hyundai Sonata 2021, $22,000"}
             ]
         elif "faq" in lowered or "❓" in text:
             link = "https://docs.google.com/document/d/1VSmsVevCBc0BCSVnsJgdkwlZRWDY_hhjIbcnzPpsOVg/edit?usp=sharing"
