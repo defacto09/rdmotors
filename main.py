@@ -1,12 +1,14 @@
-import os
 import logging
+import shutil
+import pathlib
+from functools import wraps
 from datetime import datetime, timedelta
 from collections import defaultdict
 from urllib.parse import quote_plus
 import requests
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, BigInteger
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -37,7 +39,7 @@ DB_PORT = os.getenv("DB_PORT", "3306")
 DB_NAME = os.getenv("DB_NAME")
 
 # ============================================================================
-# DATABASE SETUP
+# DATABASE SETUP - SHARED WITH API
 # ============================================================================
 
 Base = declarative_base()
@@ -48,22 +50,31 @@ class Message(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
-    user_id = Column(BigInteger, index=True)
+    user_id = Column(Integer, index=True)
     username = Column(String(100))
     message = Column(Text)
+
+
+class CarStatus(Base):
+    __tablename__ = 'car_status'
+
+    vin = Column(String(17), primary_key=True)
+    status = Column(String(500))
+    container_number = Column(String(50))
+    updated_at = Column(DateTime, default=datetime.utcnow)
 
 
 class BotUser(Base):
     __tablename__ = 'bot_users'
 
-    user_id = Column(BigInteger, primary_key=True)
+    user_id = Column(Integer, primary_key=True)
     username = Column(String(100))
     first_name = Column(String(100))
     is_manager = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
-# MySQL Connection
+# MySQL Connection (Same as API!)
 db_password_escaped = quote_plus(DB_PASSWORD)
 DATABASE_URL = f"mysql+pymysql://{DB_USER}:{db_password_escaped}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
@@ -71,7 +82,7 @@ engine = create_engine(
     DATABASE_URL,
     pool_size=5,
     max_overflow=10,
-    pool_pre_ping=True,
+    pool_pre_ping=True,  # Test connection before use
     echo=False
 )
 
@@ -125,24 +136,21 @@ def save_message_to_db(user_id, username, message_text):
 
 
 def get_car_status_from_api(vin):
-    """Get car status from backend API"""
     url = f"https://rdmotors.com.ua/autousa/vin/{vin}"
     headers = {"Authorization": "Bearer Qndr1@n4zr0m4n"}
-    try:
-        response = requests.get(url, headers=headers, timeout=5)
-        if response.status_code == 200:
-            return response.json()
-    except Exception as e:
-        logger.error(f"❌ API Error: {e}")
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()  # Dict with all fields
     return None
 
-
+# ФУНКЦІЯ ТЕЛЕГРАМ-БОТА
 def get_car_status_by_vin(vin):
     """Get car status from backend API by VIN"""
     try:
         car_info = get_car_status_from_api(vin)
         if car_info:
             logger.debug(f"✅ Знайшли статус для цього VIN {vin}")
+            # Можна повертати деталі або сформувати відповідь для користувача:
             return car_info
         else:
             logger.debug(f"⚠️ Нічого не знайдено за вашим запитом {vin}")
@@ -150,7 +158,6 @@ def get_car_status_by_vin(vin):
     except Exception as e:
         logger.error(f"❌ Error querying car status: {e}")
         return None
-
 
 def save_bot_user(user_id, username, first_name, is_manager=0):
     """Save or update bot user"""
@@ -175,118 +182,10 @@ def save_bot_user(user_id, username, first_name, is_manager=0):
     finally:
         db.close()
 
-
-# ============================================================================
-# COMMAND HANDLERS
-# ============================================================================
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Start command"""
-    user = update.message.from_user
-    save_bot_user(user.id, user.username or "unknown", user.first_name or "User")
-    await update.message.reply_text(
-        "👋 Привіт! Вас вітає підтримка RDMOTORS. Оберіть дію або напишіть повідомлення.",
-        reply_markup=get_main_keyboard()
-    )
-
-
-async def dogovir(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Send agreement link"""
-    link = "https://docs.google.com/document/d/1VSmsVevCBc0BCSVnsJgdkwlZRWDY_hhjIbcnzPpsOVg/edit?usp=sharing"
-    await update.message.reply_text(
-        f"📄 Ось наш договір:\n\n[Link]({link})",
-        parse_mode="Markdown",
-        disable_web_page_preview=True
-    )
-
-
-async def forma(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Send form link"""
-    link = "https://forms.gle/BXkuZr9C5qEJHijd7"
-    await update.message.reply_text(
-        f"📄 Ось наша форма:\n\n[Link]({link})",
-        parse_mode="Markdown",
-        disable_web_page_preview=True
-    )
-
-
-async def update_vin_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Manager command: Update car status by VIN"""
-    if update.effective_user.id != MANAGER_ID:
-        await update.message.reply_text("❌ Access denied.")
-        return
-
-    full_text = update.message.text
-    parts = full_text.split(maxsplit=3)
-    if len(parts) < 4:
-        await update.message.reply_text("⚠️ Format: /vinstatus <VIN> <container> <status>")
-        return
-
-    vin = parts[1].upper()
-    container = parts[2]
-    status = parts[3]
-
-    await update.message.reply_text(
-        f"✅ Status updated for VIN {vin}:\n📦 Container: {container}\n📍 Status: {status}"
-    )
-    logger.info(f"✅ VIN {vin} status updated")
-
-
-async def get_last_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Manager command: View last messages"""
-    if update.effective_user.id != MANAGER_ID:
-        await update.message.reply_text("❌ Access denied.")
-        return
-
-    db = SessionLocal()
-    try:
-        messages = db.query(Message).order_by(Message.id.desc()).limit(10).all()
-        if not messages:
-            await update.message.reply_text("⚠️ No messages yet.")
-            return
-
-        text = "🗂 Last 10 messages:\n\n"
-        for m in messages:
-            text += f"🕒 {m.timestamp}\n👤 @{m.username} (ID: {m.user_id})\n💬 {m.message}\n\n"
-
-        await update.message.reply_text(text[:4096])
-    except Exception as e:
-        logger.error(f"❌ Erro querying messages: {e}")
-        await update.message.reply_text("⚠️ Failed to retrieve messages.")
-    finally:
-        db.close()
-
-
-async def reply_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Manager command: Reply to user"""
-    if update.effective_user.id != MANAGER_ID:
-        await update.message.reply_text("❌ Access denied.")
-        return
-
-    if len(context.args) < 2:
-        await update.message.reply_text("⚠️ Format: /reply <user_id> <text>")
-        return
-
-    user_id = context.args[0]
-    reply_text = " ".join(context.args[1:])
-
-    try:
-        await context.bot.send_message(
-            chat_id=int(user_id),
-            text=f"📩 Reply from manager:\n{reply_text}"
-        )
-        await update.message.reply_text("✅ Message sent.")
-    except Exception as e:
-        logger.error(f"❌ Error: {e}")
-        await update.message.reply_text(f"⚠️ Failed to send: {e}")
-
-
 # ============================================================================
 # MESSAGE HANDLER
 # ============================================================================
-
 async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Main message handler"""
     text = update.message.text
     user = update.message.from_user
     user_id = user.id
@@ -347,6 +246,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     if len(text) == 17 and text.isalnum():
         result = get_car_status_by_vin(text.upper())
         if result:
+            # ТЕПЕР result — dict, а не tuple!
             await update.message.reply_text(
                 f"🚗 *Статус авто*\n"
                 f"🔎 *VIN:* `{result.get('vin', text.upper())}`\n"
@@ -373,7 +273,6 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     except Exception as e:
         logger.error(f"Не вдалося переслати менеджеру: {e}")
     await update.message.reply_text("✅ Ваше повідомлення надіслано менеджеру.")
-
 
 # ============================================================================
 # KEYBOARD LAYOUT
@@ -412,7 +311,7 @@ def main():
     app.add_handler(CommandHandler("messages", get_last_messages))
     app.add_handler(CommandHandler("reply", reply_command))
 
-    # Messages (MUST BE LAST)
+    # Messages
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_user_message))
 
     logger.info("🚀 Bot started successfully!")
@@ -421,3 +320,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
