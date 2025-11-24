@@ -261,7 +261,6 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         result = get_car_status_by_vin(text.upper())
         if result:
             now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-            # ТЕПЕР result — dict, а не tuple!
             await update.message.reply_text(
                 f"🚗 *Статус авто*\n"
                 f"🔎 *VIN:* `{result.get('vin', text.upper())}`\n"
@@ -271,8 +270,8 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 f"📍 *Поточна локація:* {result.get('loc_now', '')}\n"
                 f"🧭 *Наступна зупинка:* {result.get('loc_next', '')}\n"
                 f"🕒 Прибуття: {result.get('arrival_date', '')}\n"
-                f"🕒 Відправлення: {result.get('departure_date', '')}",
-    f"⏰ *Актуально на:* {now}",
+                f"🕒 Відправлення: {result.get('departure_date', '')}\n"
+                f"⏰ *Актуально на:* {now}",
                 parse_mode='Markdown'
             )
         else:
